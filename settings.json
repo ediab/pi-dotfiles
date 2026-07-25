@@ -24,8 +24,7 @@
     "npm:pi-code-previews",
     "git:github.com/obra/superpowers",
     "npm:pi-lsp",
-    "npm:@firstpick/pi-themes-bundle",
-    "npm:pi-secret-guard"
+    "npm:@firstpick/pi-themes-bundle"
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
