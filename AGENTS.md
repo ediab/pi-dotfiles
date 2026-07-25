@@ -91,6 +91,26 @@ Keep pi-elias in sync with the live harness: whenever you install/remove a packa
 
 ---
 
+## Dotfiles & configs
+
+Shell, terminal, editor, and pi configs live in `~/dev/configs/` (git repo). When you edit any of these, commit the change there so they're versioned and syncable across machines.
+
+Symlinked (edit in `~/dev/configs/` directly):
+- `.zshrc` → `~/.zshrc`
+- `ghostty/config` → `~/.config/ghostty/config`
+- `starship.toml` → `~/.config/starship.toml`
+- `vscode/settings.json` → `~/Library/Application Support/Code/User/settings.json`
+- `vscode/keybindings.json` → `~/Library/Application Support/Code/User/keybindings.json`
+
+Symlinked through `~/dev/configs/pi/`:
+- `pi/settings.json` → `~/.pi/agent/settings.json`
+- `pi/no-footer.ts` → `~/.pi/agent/extensions/no-footer.ts`
+- `pi/statusline.ts` → `~/.pi/agent/extensions/statusline.ts`
+
+
+
+Also: `vscode/extensions.txt` — list of installed VS Code extensions, regenerated with `code --list-extensions`.
+
 ## Documented Solutions
 
 `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns, tooling decisions), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`). Relevant when implementing or debugging in documented areas.
