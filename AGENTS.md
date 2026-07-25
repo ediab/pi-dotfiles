@@ -66,7 +66,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - Drop filler, hedging, and pleasantries. Fragments are fine.
 - State what changed and why. Cut anything else.
-- Explanation you were asked for (a report, walkthrough, per-phase notes) is not debt — give it in full.
+- Explanation you were asked for (a report, walkthrough, per-phase notes) is not debt — give it in full, in plain English.
 - Code blocks, errors, and commands stay exact.
 
 ---
@@ -87,7 +87,9 @@ Slash commands added via extensions in `~/dev/pi-elias/extensions/` (synced to `
 
 ## pi-elias sync
 
-Keep pi-elias in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
+When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-elias` so they're captured for reinstall on other machines. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
+
+**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically.
 
 ---
 
