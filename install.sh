@@ -13,9 +13,9 @@ PACKAGES=(
   npm:@ff-labs/pi-fff
   npm:pi-code-previews
   npm:@aliou/pi-guardrails
-  npm:@victor-software-house/pi-curated-themes
-  npm:@narumitw/pi-lsp
   git:github.com/obra/superpowers
+  npm:pi-lsp
+  npm:@firstpick/pi-themes-bundle
 )
 
 # Custom (non-package) skills bundled in this repo.

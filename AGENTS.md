@@ -71,9 +71,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ---
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
----
-
 ## Tech Documentation Lookups
 
 Use the `context7` MCP server for library/API documentation — it returns current, version-pinned docs, so it's more accurate than web search or guessing from memory.
@@ -90,9 +87,7 @@ Slash commands added via extensions in `~/dev/pi-elias/extensions/` (synced to `
 
 ## pi-elias sync
 
-When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-elias` so they're captured for reinstall on other machines. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills and extensions to `~/.pi/agent/`.
-
-**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically.
+Keep pi-elias in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills and extensions to `~/.pi/agent/`.
 
 ---
 
@@ -103,12 +98,8 @@ When you make changes to the pi harness setup (custom extensions, skills, instal
 
 ---
 
-_Note: machine-specific sections (e.g. VPS access details) are kept local-only in `~/.pi/agent/AGENTS.md` and intentionally not committed to this public repo. `install.sh` seeds this file only when it's absent, so it never clobbers those local additions. On a new machine, re-add them manually after running `install.sh`._
-
 <!-- BEGIN SUPERPOWERS PI TOOL MAP -->
 ## Superpowers (Pi compatibility)
-
-This block documents the pi extensions required by superpowers skills and the retained ce-compound family.
 
 Pi extensions used by superpowers skills (brainstorming, systematic-debugging, writing-plans, etc.) and ce-compound / ce-compound-refresh / ce-setup / ce-ideate:
 - Required: `pi-subagents` (by nicobailon) provides the `subagent` tool for parallel-agent and chain workflows.
