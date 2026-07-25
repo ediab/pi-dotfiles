@@ -6,7 +6,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readdirSync, existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
@@ -25,19 +25,11 @@ interface GitStatus {
 	untracked: number;
 }
 
-interface ToolRecord {
-	name: string;
-	target: string | null;
-	status: "running" | "completed" | "error";
-	startTime: number;
-	endTime?: number;
-}
-
 // ── State ──────────────────────────────────────────────────────────
 
 let sessionStartTime = 0;
-let turnIndex = 0;
-let tools: ToolRecord[] = [];
+let lastCtx: any = null;
+let tickInterval: ReturnType<typeof setInterval> | null = null;
 let modelProvider = "";
 let modelId = "";
 let thinkingLevel = "";
@@ -50,12 +42,8 @@ const I_PATH = "⌘";
 const I_BRANCH = "⎇";
 const I_CLOCK = "✦";
 const I_CTX = "⊡";
-const I_IN = "↑";
 const I_CLAUDE = "※";
 const I_MCP = "⊕";
-const I_SKILL = "★";
-const I_EXT = "◈";
-const I_RUN = "↻";
 const I_THINK = "✶";
 
 // ── Theme helpers ──────────────────────────────────────────────────
@@ -63,7 +51,6 @@ const I_THINK = "✶";
 type Theme = { fg?: (token: string, text: string) => string } | undefined;
 
 function fg(theme: Theme, token: string, text: string): string {
-	// ponytail: fall back to bare text if theme/fg missing (print mode, older pi)
 	return theme?.fg ? theme.fg(token, text) : text;
 }
 
@@ -146,12 +133,6 @@ function ctxBar(theme: Theme, percent: number, width: number): string {
 
 // ── Formatters ─────────────────────────────────────────────────────
 
-function fmtTokens(n: number): string {
-	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-	if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-	return `${n}`;
-}
-
 function fmtDuration(ms: number): string {
 	if (ms < 1000) return `${ms}ms`;
 	const s = ms / 1000;
@@ -204,7 +185,7 @@ async function getGit(dir: string): Promise<GitStatus | null> {
 // ── Config counter ─────────────────────────────────────────────────
 
 function countConfigs(dir: string) {
-	let agentsMd = 0, mcps = 0, skills = 0, extensions = 0;
+	let agentsMd = 0, mcps = 0;
 	const home = homedir();
 	try {
 		if (existsSync(join(dir, "AGENTS.md"))) agentsMd++;
@@ -215,19 +196,8 @@ function countConfigs(dir: string) {
 			const servers = mcpCache?.servers;
 			if (servers && typeof servers === "object") mcps = Object.keys(servers).length;
 		} catch { /* ignore */ }
-
-		const skillsDir = join(home, ".pi", "agent", "skills");
-		if (existsSync(skillsDir)) {
-			skills = readdirSync(skillsDir).filter(f => !f.startsWith(".")).length;
-		}
-
-		try {
-			const settings = JSON.parse(readFileSync(join(home, ".pi", "agent", "settings.json"), "utf8"));
-			const packages: string[] = settings?.packages ?? [];
-			extensions = packages.length;
-		} catch { /* ignore */ }
 	} catch { /* ignore */ }
-	return { agentsMd, mcps, skills, extensions };
+	return { agentsMd, mcps };
 }
 
 // ── Mode segments (icon + dim label + colored level, no emoji) ─────
@@ -245,11 +215,44 @@ async function buildHud(ctx: any): Promise<string[]> {
 	const s = sep(theme);
 	const dir = cwd;
 
-	// ── Line 1: Project + Git + Duration ──
-	const parts1: string[] = [];
+	// ── Line 1: Model + Thinking + Context ──
+	const line1: string[] = [];
+
+	let modelStr: string;
+	if (modelProvider && modelId) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "muted", modelProvider)}/${fg(theme, "accent", modelId)}`;
+	} else if (modelId) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelId)}`;
+	} else if (modelProvider) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelProvider)}`;
+	} else {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", "pi")}`;
+	}
+	line1.push(modelStr);
+
+	if (thinkingLevel && thinkingLevel !== "off") line1.push(thinkSegment(theme, thinkingLevel));
+
+	try {
+		const usage = ctx.getContextUsage?.();
+		if (usage) {
+			const pct = usage.percent ?? 0;
+			const bar = ctxBar(theme, pct, 10);
+			const win = usage.contextWindow ?? 0;
+			const winLabel = win >= 1_000_000 ? `${(win / 1_000_000).toFixed(1)}M` : win >= 1000 ? `${Math.round(win / 1000)}k` : "";
+			let ctxStr = `${fg(theme, "accent", I_CTX)} ${bar} ${fg(theme, ctxColor(pct), `${pct.toFixed(1)}%`)}`;
+			if (winLabel) ctxStr += ` ${fg(theme, "dim", `(${winLabel})`)}`;
+			line1.push(ctxStr);
+		}
+	} catch { /* context usage unavailable */ }
+
+	lines.push(line1.join(` ${s} `));
+
+	// ── Line 2: Path + Git + Configs + Duration ──
+	const line2: string[] = [];
+
 	if (dir) {
 		const home = homedir();
-		parts1.push(`${fg(theme, "warning", I_PATH)} ${fg(theme, "warning", shortenDisplayPath(dir, home, 30))}`);
+		line2.push(`${fg(theme, "warning", I_PATH)} ${fg(theme, "warning", shortenDisplayPath(dir, home, 30))}`);
 	}
 
 	const git = await getGit(dir);
@@ -264,67 +267,18 @@ async function buildHud(ctx: any): Promise<string[]> {
 		if (git.deleted > 0) details.push(fg(theme, "error", `✘${git.deleted}`));
 		if (git.untracked > 0) details.push(fg(theme, "muted", `?${git.untracked}`));
 		if (details.length > 0) gitStr += ` ${details.join(" ")}`;
-		parts1.push(gitStr);
+		line2.push(gitStr);
 	}
+
+	const configs = countConfigs(dir);
+	if (configs.agentsMd > 0) line2.push(`${fg(theme, "accent", I_CLAUDE)} ${fg(theme, "accent", `×${configs.agentsMd}`)} ${fg(theme, "dim", "AGENTS.md")}`);
+	if (configs.mcps > 0) line2.push(`${fg(theme, "warning", I_MCP)} ${fg(theme, "warning", `×${configs.mcps}`)} ${fg(theme, "dim", "MCPs")}`);
 
 	if (sessionStartTime > 0) {
-		if (turnIndex > 0) parts1.push(`${fg(theme, "accent", "↺ loop")} ${fg(theme, "text", `×${turnIndex}`)}`);
-		parts1.push(`${fg(theme, "dim", I_CLOCK)} ${fg(theme, "dim", fmtDuration(Date.now() - sessionStartTime))}`);
+		line2.push(`${fg(theme, "dim", I_CLOCK)} ${fg(theme, "dim", fmtDuration(Date.now() - sessionStartTime))}`);
 	}
-
-	lines.push(parts1.join(` ${s} `));
-
-	// ── Line 2: Model + modes + Context + Tokens ──
-	const line2: string[] = [];
-
-	let modelStr: string;
-	if (modelProvider && modelId) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "muted", modelProvider)}/${fg(theme, "accent", modelId)}`;
-	} else if (modelId) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelId)}`;
-	} else if (modelProvider) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelProvider)}`;
-	} else {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", "pi")}`;
-	}
-	line2.push(modelStr);
-
-	if (thinkingLevel && thinkingLevel !== "off") line2.push(thinkSegment(theme, thinkingLevel));
-
-	try {
-		const usage = ctx.getContextUsage?.();
-		if (usage) {
-			const pct = usage.percent ?? 0;
-			const bar = ctxBar(theme, pct, 10);
-			const win = usage.contextWindow ?? 0;
-			const winLabel = win >= 1_000_000 ? `${(win / 1_000_000).toFixed(1)}M` : win >= 1000 ? `${Math.round(win / 1000)}k` : "";
-			let ctxStr = `${fg(theme, "accent", I_CTX)} ${bar} ${fg(theme, ctxColor(pct), `${pct.toFixed(1)}%`)}`;
-			if (winLabel) ctxStr += ` ${fg(theme, "dim", `(${winLabel})`)}`;
-			line2.push(ctxStr);
-
-			const totalTokens = usage.tokens ?? 0;
-			line2.push(`${fg(theme, "accent", I_IN)} ${fg(theme, "text", fmtTokens(totalTokens))}`);
-		}
-	} catch { /* context usage unavailable */ }
 
 	lines.push(line2.join(` ${s} `));
-
-	// ── Line 3: Config counts ──
-	const configs = countConfigs(dir);
-	const cfgParts: string[] = [];
-	if (configs.agentsMd > 0) cfgParts.push(`${fg(theme, "accent", I_CLAUDE)} ${fg(theme, "accent", `×${configs.agentsMd}`)} ${fg(theme, "dim", "AGENTS.md")}`);
-	if (configs.mcps > 0) cfgParts.push(`${fg(theme, "warning", I_MCP)} ${fg(theme, "warning", `×${configs.mcps}`)} ${fg(theme, "dim", "MCPs")}`);
-	if (configs.skills > 0) cfgParts.push(`${fg(theme, "accent", I_SKILL)} ${fg(theme, "accent", `×${configs.skills}`)} ${fg(theme, "dim", "skills")}`);
-	if (configs.extensions > 0) cfgParts.push(`${fg(theme, "warning", I_EXT)} ${fg(theme, "warning", `×${configs.extensions}`)} ${fg(theme, "dim", "extensions")}`);
-	if (cfgParts.length > 0) lines.push(cfgParts.join(` ${s} `));
-
-	// ── Running tools ──
-	const running = tools.filter(t => t.status === "running");
-	for (const t of running.slice(-2)) {
-		const elapsed = fmtDuration(Date.now() - t.startTime);
-		const target = t.target ? `: ${shortenDisplayPath(t.target, homedir(), 22)}` : "";
-		lines.push(`${fg(theme, "warning", I_RUN)} ${fg(theme, "accent", t.name)}${target} ${fg(theme, "dim", `(${elapsed})`)}`);
-	}
 
 	return lines;
 }
@@ -340,14 +294,15 @@ function refreshHud(ctx: any) {
 export default function (pi: ExtensionAPI) {
 	pi.on("session_start", (_event, ctx) => {
 		sessionStartTime = Date.now();
-		turnIndex = 0;
+		lastCtx = ctx;
 		cwd = ctx.cwd;
-		tools = [];
 		if (ctx.model) {
 			modelProvider = (ctx.model as any).provider ?? "";
 			modelId = (ctx.model as any).id ?? "";
 		}
 		thinkingLevel = pi.getThinkingLevel?.() ?? "";
+		if (tickInterval) clearInterval(tickInterval);
+		tickInterval = setInterval(() => { if (lastCtx) refreshHud(lastCtx); }, 1000);
 		refreshHud(ctx);
 	});
 
@@ -355,35 +310,6 @@ export default function (pi: ExtensionAPI) {
 		if (event.model) {
 			modelProvider = (event.model as any).provider ?? "";
 			modelId = (event.model as any).id ?? "";
-		}
-		refreshHud(ctx);
-	});
-
-	pi.on("turn_start", (_event, ctx) => {
-		turnIndex = (_event as any).turnIndex ?? (turnIndex + 1);
-		refreshHud(ctx);
-	});
-
-	pi.on("tool_call", (event, ctx) => {
-		const tool: ToolRecord = { name: event.toolName, target: null, status: "running", startTime: Date.now() };
-		if (event.input && typeof event.input === "object") {
-			const inp = event.input as Record<string, unknown>;
-			if (typeof inp.path === "string") tool.target = inp.path;
-			else if (typeof inp.filePath === "string") tool.target = inp.filePath;
-		}
-		tools.push(tool);
-		// ponytail: cap at 500 to prevent unbounded growth over long sessions
-		if (tools.length > 500) tools = tools.slice(-400);
-		refreshHud(ctx);
-	});
-
-	pi.on("tool_result", (event, ctx) => {
-		for (let i = tools.length - 1; i >= 0; i--) {
-			if (tools[i]!.name === event.toolName && tools[i]!.status === "running") {
-				tools[i]!.status = event.isError ? "error" : "completed";
-				tools[i]!.endTime = Date.now();
-				break;
-			}
 		}
 		refreshHud(ctx);
 	});

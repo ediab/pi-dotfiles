@@ -1,8 +1,32 @@
 {
-  "theme": "everforest-dark-hard",
+  "lastChangelogVersion": "0.82.1",
+  "theme": "tokyo-night",
   "defaultProvider": "opencode-go",
   "defaultModel": "glm-5.2",
   "defaultThinkingLevel": "max",
+  "packages": [
+    "npm:pi-web-access",
+    "npm:@yusukeshib/pi-notify",
+    "npm:pi-mcp-adapter",
+    {
+      "source": "npm:pi-compound-engineering",
+      "skills": [
+        "ce-compound",
+        "ce-compound-refresh",
+        "ce-setup",
+        "ce-ideate"
+      ],
+      "extensions": []
+    },
+    "npm:pi-ask-user",
+    "npm:pi-subagents",
+    "npm:@ff-labs/pi-fff",
+    "npm:pi-code-previews",
+    "git:github.com/obra/superpowers",
+    "npm:pi-lsp",
+    "npm:@firstpick/pi-themes-bundle",
+    "npm:pi-secret-guard"
+  ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
   "powerline": true,
@@ -11,24 +35,6 @@
   "header-info": true,
   "quietStartup": true,
   "hideThinkingBlock": true,
-  "packages": [
-    "npm:pi-web-access",
-    "npm:@yusukeshib/pi-notify",
-    "npm:pi-mcp-adapter",
-    {
-      "source": "npm:pi-compound-engineering",
-      "skills": ["ce-compound", "ce-compound-refresh", "ce-setup", "ce-ideate"],
-      "extensions": []
-    },
-    "npm:pi-ask-user",
-    "npm:pi-subagents",
-    "npm:@ff-labs/pi-fff",
-    "npm:pi-code-previews",
-    "npm:pi-secret-guard",
-    "git:github.com/obra/superpowers",
-    "npm:pi-lsp",
-    "npm:@firstpick/pi-themes-bundle"
-  ],
   "subagents": {
     "agentOverrides": {
       "scout": {

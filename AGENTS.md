@@ -87,13 +87,13 @@ Slash commands added via extensions in `~/dev/pi-elias/extensions/` (synced to `
 
 ## pi-elias sync
 
-Keep pi-elias in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills and extensions to `~/.pi/agent/`.
+Keep pi-elias in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
 
 ---
 
 ## Dotfiles & configs
 
-Shell, terminal, editor, and pi configs live in `~/dev/configs/` (git repo). When you edit any of these, commit the change there so they're versioned and syncable across machines.
+Shell, terminal, and editor configs live in `~/dev/configs/` (git repo). When you edit any of these, commit the change there so they're versioned and syncable across machines.
 
 Symlinked (edit in `~/dev/configs/` directly):
 - `.zshrc` → `~/.zshrc`
@@ -102,10 +102,7 @@ Symlinked (edit in `~/dev/configs/` directly):
 - `vscode/settings.json` → `~/Library/Application Support/Code/User/settings.json`
 - `vscode/keybindings.json` → `~/Library/Application Support/Code/User/keybindings.json`
 
-Symlinked through `~/dev/configs/pi/`:
-- `pi/settings.json` → `~/.pi/agent/settings.json`
-- `pi/no-footer.ts` → `~/.pi/agent/extensions/no-footer.ts`
-- `pi/statusline.ts` → `~/.pi/agent/extensions/statusline.ts`
+Pi agent files — `settings.json`, `extensions/no-footer.ts`, `extensions/statusline.ts` — are **not** in configs. They live in `~/dev/pi-elias/` and are deployed to `~/.pi/agent/` as copies by `install.sh`/`update.sh`. Edit them in `~/dev/pi-elias/`, then run `~/dev/pi-elias/update.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
 
 
 

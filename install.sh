@@ -43,6 +43,14 @@ else
 fi
 
 echo "==> 2/3  packages (${#PACKAGES[@]} total)"
+
+# Deploy canonical pi agent settings.json from this repo as the base; pi install
+# below appends each installed package into it. Repo is source of truth; live edits
+# to settings.json should be re-synced back here to avoid backup drift.
+cp "$SCRIPT_DIR/settings.json" "$HOME/.pi/agent/settings.json" \
+  && echo "    settings.json  deployed" \
+  || echo "    FAILED: settings.json"
+
 for pkg in "${PACKAGES[@]}"; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done

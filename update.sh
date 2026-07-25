@@ -11,10 +11,19 @@ CUSTOM_SKILLS=(handoff grill-me grilling)
 CUSTOM_EXTENSIONS=(clear commit-push-pr exit handoff no-footer statusline)
 CUSTOM_EXTENSION_DIRS=(plan-mode)
 
-echo "==> 1/2  pi + packages"
+echo "==> 1/3  pi + packages"
 pi update --all
 
-echo "==> 2/2  custom skills (${#CUSTOM_SKILLS[@]} total) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
+echo "==> 2/3  settings.json (repo → live)"
+# Repo is source of truth for the pi agent settings.json. NOTE: pi itself rewrites
+# this file (changelog version, installed-packages list); if you edit the live file,
+# re-sync it back into the repo (`cp ~/.pi/agent/settings.json ~/Dev/pi-elias/settings.json`)
+# before re-running update.sh to avoid clobbering local changes.
+cp "$SCRIPT_DIR/settings.json" "$HOME/.pi/agent/settings.json" \
+  && echo "    settings.json  re-synced" \
+  || echo "    FAILED: settings.json"
+
+echo "==> 3/3  custom skills (${#CUSTOM_SKILLS[@]} total) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
 mkdir -p "$PI_SKILLS_DIR"
 for skill in "${CUSTOM_SKILLS[@]}"; do
   src="$SCRIPT_DIR/skills/$skill/SKILL.md"
