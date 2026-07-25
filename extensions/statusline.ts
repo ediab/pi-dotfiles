@@ -30,10 +30,7 @@ interface GitStatus {
 let sessionStartTime = 0;
 let lastCtx: any = null;
 let tickInterval: ReturnType<typeof setInterval> | null = null;
-let modelProvider = "";
-let modelId = "";
 let thinkingLevel = "";
-let cwd = "";
 
 // ── Icons (plain glyphs, no emoji — matches shannon's set) ─────────
 
@@ -209,22 +206,32 @@ function thinkSegment(theme: Theme, level: string): string {
 
 // ── HUD renderer ───────────────────────────────────────────────────
 
+/** Read model provider + id from the live context, falling back to "pi". */
+function readModel(ctx: any): { provider: string; id: string } {
+	const m = ctx?.model;
+	if (m && typeof m.provider === "string" && typeof m.id === "string") {
+		return { provider: m.provider, id: m.id };
+	}
+	return { provider: "", id: "" };
+}
+
 async function buildHud(ctx: any): Promise<string[]> {
 	const lines: string[] = [];
 	const theme: Theme = ctx?.ui?.theme;
 	const s = sep(theme);
-	const dir = cwd;
+	const dir = ctx?.cwd ?? "";
 
 	// ── Line 1: Model + Thinking + Context ──
 	const line1: string[] = [];
 
+	const { provider, id } = readModel(ctx);
 	let modelStr: string;
-	if (modelProvider && modelId) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "muted", modelProvider)}/${fg(theme, "accent", modelId)}`;
-	} else if (modelId) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelId)}`;
-	} else if (modelProvider) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", modelProvider)}`;
+	if (provider && id) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "muted", provider)}/${fg(theme, "accent", id)}`;
+	} else if (id) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", id)}`;
+	} else if (provider) {
+		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", provider)}`;
 	} else {
 		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", "pi")}`;
 	}
@@ -292,32 +299,32 @@ function refreshHud(ctx: any) {
 }
 
 export default function (pi: ExtensionAPI) {
+	function updateCtx(ctx: any) {
+		lastCtx = ctx;
+	}
+
 	pi.on("session_start", (_event, ctx) => {
 		sessionStartTime = Date.now();
-		lastCtx = ctx;
-		cwd = ctx.cwd;
-		if (ctx.model) {
-			modelProvider = (ctx.model as any).provider ?? "";
-			modelId = (ctx.model as any).id ?? "";
-		}
+		updateCtx(ctx);
 		thinkingLevel = pi.getThinkingLevel?.() ?? "";
 		if (tickInterval) clearInterval(tickInterval);
 		tickInterval = setInterval(() => { if (lastCtx) refreshHud(lastCtx); }, 1000);
 		refreshHud(ctx);
 	});
 
-	pi.on("model_select", (event, ctx) => {
-		if (event.model) {
-			modelProvider = (event.model as any).provider ?? "";
-			modelId = (event.model as any).id ?? "";
-		}
+	pi.on("model_select", (_event, ctx) => {
+		updateCtx(ctx);
 		refreshHud(ctx);
 	});
 
 	pi.on("thinking_level_select", (event, ctx) => {
 		thinkingLevel = (event as any).level ?? thinkingLevel;
+		updateCtx(ctx);
 		refreshHud(ctx);
 	});
 
-	pi.on("turn_end", (_event, ctx) => refreshHud(ctx));
+	pi.on("turn_end", (_event, ctx) => {
+		updateCtx(ctx);
+		refreshHud(ctx);
+	});
 }
