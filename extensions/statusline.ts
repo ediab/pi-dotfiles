@@ -1,8 +1,7 @@
 /**
  * elias-statusline — theme-aware HUD for Pi.
  * Forked from pi-shannon-statusline: matrix rain removed, colors driven by
- * ctx.ui.theme instead of a hardcoded Monokai Pro palette, and a ponytail
- * mode segment added to the model line (read from session entries).
+ * ctx.ui.theme instead of a hardcoded Monokai Pro palette.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { execFile } from "node:child_process";
@@ -26,12 +25,6 @@ interface GitStatus {
 	untracked: number;
 }
 
-interface AgentRecord {
-	status: "running" | "completed";
-	startTime: number;
-	endTime?: number;
-}
-
 interface ToolRecord {
 	name: string;
 	target: string | null;
@@ -44,7 +37,6 @@ interface ToolRecord {
 
 let sessionStartTime = 0;
 let turnIndex = 0;
-let agents: AgentRecord[] = [];
 let tools: ToolRecord[] = [];
 let modelProvider = "";
 let modelId = "";
@@ -64,7 +56,6 @@ const I_MCP = "⊕";
 const I_SKILL = "★";
 const I_EXT = "◈";
 const I_RUN = "↻";
-const I_PONY = "◇";
 const I_THINK = "✶";
 
 // ── Theme helpers ──────────────────────────────────────────────────
@@ -80,13 +71,7 @@ function sep(theme: Theme): string {
 	return fg(theme, "dim", "│");
 }
 
-// level → theme color token (by intensity tier)
-const PONY_COLOR: Record<string, string> = {
-	lite: "success",
-	full: "accent",
-	ultra: "error",
-};
-// ponytail: thinking tiers — higher effort = hotter color, mirroring ctxColor
+// thinking tiers — higher effort = hotter color, mirroring ctxColor
 const THINK_COLOR: Record<string, string> = {
 	minimal: "dim",
 	low: "success",
@@ -158,13 +143,6 @@ function ctxBar(theme: Theme, percent: number, width: number): string {
 	const empty = width - filled;
 	return `${fg(theme, ctxColor(safeP), "█".repeat(filled))}${fg(theme, "dim", "░".repeat(empty))}`;
 }
-
-// ── Tool whitelist — only Pi-native tools shown ────────────────────
-
-const TOOL_WHITELIST = new Set([
-	"read", "write", "edit", "bash",
-	"grep", "ls", "find",
-]);
 
 // ── Formatters ─────────────────────────────────────────────────────
 
@@ -252,47 +230,7 @@ function countConfigs(dir: string) {
 	return { agentsMd, mcps, skills, extensions };
 }
 
-// ── Mode readers (live state from session entries) ─────────────────
-
-function lastCustomEntry(entries: any[], customType: string): any | null {
-	if (!Array.isArray(entries)) return null;
-	for (let i = entries.length - 1; i >= 0; i--) {
-		const e = entries[i];
-		if (e?.type === "custom" && e?.customType === customType) return e?.data ?? null;
-	}
-	return null;
-}
-
-// ponytail: matches ponytail's getDefaultMode() — env > config file > 'full'.
-// Ponytail's pi-extension resolves its mode on session_start but does NOT append
-// a session entry unless /ponytail <mode> is run explicitly, so the default must
-// be read from the same sources ponytail reads.
-const PONY_VALID = new Set(["off", "lite", "full", "ultra", "review"]);
-
-function ponytailDefaultMode(): string {
-	const env = process.env.PONYTAIL_DEFAULT_MODE;
-	if (env && PONY_VALID.has(env.toLowerCase())) return env.toLowerCase();
-	try {
-		const cfg = JSON.parse(readFileSync(join(homedir(), ".config", "ponytail", "config.json"), "utf8"));
-		const m = String(cfg?.defaultMode ?? "").toLowerCase();
-		if (PONY_VALID.has(m)) return m;
-	} catch { /* no/invalid config */ }
-	return "full";
-}
-
-function readPonytailMode(ctx: any): string | null {
-	const entries = ctx?.sessionManager?.getEntries?.() ?? ctx?.sessionManager?.getBranch?.() ?? [];
-	const data = lastCustomEntry(entries, "ponytail-mode");
-	const mode = data?.mode ? String(data.mode) : ponytailDefaultMode();
-	return mode && mode !== "off" ? mode : null;
-}
-
 // ── Mode segments (icon + dim label + colored level, no emoji) ─────
-
-function ponySegment(theme: Theme, mode: string): string {
-	const color = PONY_COLOR[mode] ?? "accent";
-	return `${fg(theme, color, I_PONY)} ${fg(theme, "muted", "ponytail")} ${fg(theme, color, mode.toUpperCase())}`;
-}
 
 function thinkSegment(theme: Theme, level: string): string {
 	const color = THINK_COLOR[level] ?? "accent";
@@ -353,9 +291,6 @@ async function buildHud(ctx: any): Promise<string[]> {
 
 	if (thinkingLevel && thinkingLevel !== "off") line2.push(thinkSegment(theme, thinkingLevel));
 
-	const pony = readPonytailMode(ctx);
-	if (pony) line2.push(ponySegment(theme, pony));
-
 	try {
 		const usage = ctx.getContextUsage?.();
 		if (usage) {
@@ -383,30 +318,6 @@ async function buildHud(ctx: any): Promise<string[]> {
 	if (configs.extensions > 0) cfgParts.push(`${fg(theme, "warning", I_EXT)} ${fg(theme, "warning", `×${configs.extensions}`)} ${fg(theme, "dim", "extensions")}`);
 	if (cfgParts.length > 0) lines.push(cfgParts.join(` ${s} `));
 
-	// ── Agent activity ──
-	const activeAgents = agents.filter(a => a.status === "running").length;
-	const completedAgents = agents.filter(a => a.status === "completed").length;
-
-	// ── Tool counts ──
-	const completed = tools.filter(t => t.status === "completed" && TOOL_WHITELIST.has(t.name));
-	const toolCounts = new Map<string, number>();
-	for (const t of completed) toolCounts.set(t.name, (toolCounts.get(t.name) ?? 0) + 1);
-
-	const toolLineParts: string[] = [];
-	for (const name of toolCounts.keys()) {
-		const count = toolCounts.get(name) ?? 0;
-		if (count > 0) toolLineParts.push(`${fg(theme, "success", "✔")} ${fg(theme, "text", name)}${count > 1 ? ` ${fg(theme, "muted", `×${count}`)}` : ""}`);
-	}
-
-	if (toolLineParts.length > 0 || activeAgents > 0 || completedAgents > 0) {
-		lines.push(fg(theme, "dim", "─".repeat(67)));
-		if (toolLineParts.length > 0) lines.push(toolLineParts.join(` ${s} `));
-		const agentParts: string[] = [];
-		if (activeAgents > 0) agentParts.push(`${fg(theme, "warning", I_RUN)} ${fg(theme, "accent", "agent")} ${fg(theme, "accent", `×${activeAgents}`)}`);
-		if (completedAgents > 0) agentParts.push(`${fg(theme, "success", "✔")} ${fg(theme, "accent", "agent")} ${fg(theme, "accent", `×${completedAgents}`)}`);
-		if (agentParts.length > 0) lines.push(agentParts.join(` ${s} `));
-	}
-
 	// ── Running tools ──
 	const running = tools.filter(t => t.status === "running");
 	for (const t of running.slice(-2)) {
@@ -431,7 +342,6 @@ export default function (pi: ExtensionAPI) {
 		sessionStartTime = Date.now();
 		turnIndex = 0;
 		cwd = ctx.cwd;
-		agents = [];
 		tools = [];
 		if (ctx.model) {
 			modelProvider = (ctx.model as any).provider ?? "";
@@ -474,20 +384,6 @@ export default function (pi: ExtensionAPI) {
 				tools[i]!.endTime = Date.now();
 				break;
 			}
-		}
-		refreshHud(ctx);
-	});
-
-	pi.on("agent_start", (_event, ctx) => {
-		agents.push({ status: "running", startTime: Date.now() });
-		refreshHud(ctx);
-	});
-
-	pi.on("agent_end", (_event, ctx) => {
-		const running = agents.find(a => a.status === "running");
-		if (running) {
-			running.status = "completed";
-			running.endTime = Date.now();
 		}
 		refreshHud(ctx);
 	});

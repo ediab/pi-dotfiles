@@ -130,7 +130,6 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 
 		if (event.toolName === "edit" || event.toolName === "write") {
 			const target = (event.input as { path?: string }).path ?? "";
-			// ponytail: allow write under the dedicated plans dirs only; everything else blocked.
 			if (!isPlanFilePath(target)) {
 				return {
 					block: true,

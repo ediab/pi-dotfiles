@@ -125,7 +125,6 @@ export function isSafeCommand(command: string): boolean {
 	return !isDestructive && isSafe;
 }
 
-// ponytail: one runnable self-check for the plan-file carve-out + bash allowlist.
 // Guarded by import.meta.main so it only runs when this file is the entry script
 // (bun utils.ts), never when pi's jiti imports it as a module.
 if ((import.meta as unknown as { main?: boolean }).main) {
