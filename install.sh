@@ -13,7 +13,6 @@ PACKAGES=(
   npm:@ff-labs/pi-fff
   npm:pi-code-previews
   npm:pi-secret-guard
-  git:github.com/obra/superpowers
   npm:pi-lsp
   npm:@firstpick/pi-themes-bundle
 )
