@@ -16,8 +16,8 @@ PACKAGES=(
   npm:@firstpick/pi-themes-bundle
 )
 
-# Custom (non-package) skills bundled in this repo.
-CUSTOM_SKILLS=(handoff grill-me grilling)
+# Skills bundled in this repo (whole directories, including subdocs).
+# Add/remove a skill by adding/removing its directory under skills/; no script edit needed.
 
 # Custom extensions bundled in this repo (single-file .ts -> ~/.pi/agent/extensions/).
 CUSTOM_EXTENSIONS=(clear commit-push-pr exit no-footer statusline)
@@ -53,18 +53,16 @@ for pkg in "${PACKAGES[@]}"; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done
 
-echo "==> 3/3  custom skills (${#CUSTOM_SKILLS[@]} total) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
+echo "==> 3/3  skills (every dir in $SCRIPT_DIR/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
 mkdir -p "$PI_SKILLS_DIR"
-for skill in "${CUSTOM_SKILLS[@]}"; do
-  src="$SCRIPT_DIR/skills/$skill/SKILL.md"
-  if [ ! -f "$src" ]; then
-    echo "  MISSING: $skill (no $src) — clone the repo instead of curl|bash, or add the skill"
-    continue
-  fi
-  mkdir -p "$PI_SKILLS_DIR/$skill"
-  cp "$src" "$PI_SKILLS_DIR/$skill/SKILL.md"
+shopt -s nullglob
+for src in "$SCRIPT_DIR/skills"/*/; do
+  skill="$(basename "$src")"
+  rm -rf "$PI_SKILLS_DIR/$skill"
+  cp -R "$SCRIPT_DIR/skills/$skill" "$PI_SKILLS_DIR/"
   echo "    $skill  installed"
 done
+shopt -u nullglob
 
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
 mkdir -p "$PI_EXTENSIONS_DIR"
@@ -101,9 +99,12 @@ echo "==> verify"
 command -v pi >/dev/null 2>&1 && echo "    pi: $(pi --version)" || echo "    pi: MISSING"
 echo "    packages:"
 pi list 2>/dev/null || echo "    pi list failed"
-for skill in "${CUSTOM_SKILLS[@]}"; do
+shopt -s nullglob
+for src in "$SCRIPT_DIR/skills"/*/; do
+  skill="$(basename "$src")"
   [ -f "$PI_SKILLS_DIR/$skill/SKILL.md" ] && echo "    ok: $skill" || echo "    MISSING: $skill"
 done
+shopt -u nullglob
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
   [ -f "$HOME/.pi/agent/extensions/$ext.ts" ] && echo "    ok: $ext" || echo "    MISSING: $ext"
 done

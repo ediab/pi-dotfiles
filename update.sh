@@ -7,7 +7,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
-CUSTOM_SKILLS=(handoff grill-me grilling)
+# Skills deployed below = every dir in $SCRIPT_DIR/skills/ (whole-dir copies).
 CUSTOM_EXTENSIONS=(clear commit-push-pr exit no-footer statusline)
 CUSTOM_EXTENSION_DIRS=(plan-mode)
 
@@ -23,18 +23,16 @@ cp "$SCRIPT_DIR/settings.json" "$HOME/.pi/agent/settings.json" \
   && echo "    settings.json  re-synced" \
   || echo "    FAILED: settings.json"
 
-echo "==> 3/3  custom skills (${#CUSTOM_SKILLS[@]} total) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
+echo "==> 3/3  skills (every dir in $SCRIPT_DIR/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
 mkdir -p "$PI_SKILLS_DIR"
-for skill in "${CUSTOM_SKILLS[@]}"; do
-  src="$SCRIPT_DIR/skills/$skill/SKILL.md"
-  if [ ! -f "$src" ]; then
-    echo "  MISSING: $skill (no $src) — run from a clone of the repo"
-    continue
-  fi
-  mkdir -p "$PI_SKILLS_DIR/$skill"
-  cp "$src" "$PI_SKILLS_DIR/$skill/SKILL.md"
+shopt -s nullglob
+for src in "$SCRIPT_DIR/skills"/*/; do
+  skill="$(basename "$src")"
+  rm -rf "$PI_SKILLS_DIR/$skill"
+  cp -R "$SCRIPT_DIR/skills/$skill" "$PI_SKILLS_DIR/"
   echo "    $skill  re-synced"
 done
+shopt -u nullglob
 
 mkdir -p "$PI_EXTENSIONS_DIR"
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do

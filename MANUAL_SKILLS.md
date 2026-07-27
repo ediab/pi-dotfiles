@@ -1,9 +1,11 @@
 # Manual Skills
 
-Skills are maintained as standalone copies under `~/.pi/agent/skills/` instead of
-being loaded from packages. Two upstream sources were originally copied in:
-superpowers (obra) and mattpocock. This file records the **curated** state after
-combining the two schools (2025-07-15).
+The curated set of 24 skills is **vendored** in this repo at `skills/` (whole
+directories, including subdocs) and deployed to `~/.pi/agent/skills/` by
+`install.sh`/`update.sh`. This repo is the source of truth: upstream repos
+(superpowers / mattpocock) are only consulted when you choose to pull an update.
+Two upstream sources were originally copied in: superpowers (obra) and mattpocock.
+This file records the **curated** state after combining the two schools (2025-07-15).
 
 ## Curated set — 24 skills
 
@@ -52,7 +54,7 @@ combining the two schools (2025-07-15).
    anti-claim-hedging discipline).
 10. Confirmed the rest; kept `grill-me` as the `/grill-me` alias.
 
-## Edits actually applied (live copies in `~/.pi/agent/skills/`)
+## Edits applied (now live in the vendored copy at `skills/<skill>/`)
 - `brainstorming/SKILL.md`: advisory frontmatter; removed `<HARD-GATE>` block and the
   "This Is Too Simple" anti-pattern; softened the checklist header; step 6 path →
   `docs/specs/` with a note that `to-spec` produces the canonical PRD; step 9 →
@@ -64,6 +66,16 @@ combining the two schools (2025-07-15).
 - `finishing-a-development-branch/SKILL.md`: **no edit** — already standalone
   (detects its own worktree vs. normal-repo state; doesn't reference the dropped
   `executing-plans`/`subagent-driven-development`).
+- The other 23 skill dirs are vendored verbatim from upstream (unchanged). 24 total.
+
+## Deployment
+- `install.sh` / `update.sh` deploy **every directory** under `skills/` as a whole-dir
+  copy (`rm -rf` the live skill first, then `cp -R`) so live exactly matches the repo —
+  no stale subdocs, no SKILL.md-only gaps. Add a skill = drop a dir under `skills/`;
+  remove one = delete the dir. No script edits needed (the loop globs `skills/*/`).
+- **Live skill edits are overwritten on the next `update.sh`** — edit in the repo, then
+  run `update.sh` (or `install.sh`) to deploy. This mirrors how `settings.json` is
+  already handled.
 
 ## Config fixes so reinstall doesn't clobber the curation
 - `install.sh`: removed `git:github.com/obra/superpowers` from `PACKAGES`. Previously a
@@ -84,23 +96,26 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
 ## Follow-ups
 1. **Run `/setup-matt-pocock-skills` per repo** where you want `to-spec`/`to-tickets`.
    It is per-repo tracker config (GitHub / GitLab / local markdown), not global.
-2. **Reproducibility gap (open decision).** `install.sh`/`update.sh` only install the 3
-   custom skills (`handoff grill-me grilling`). The other 21 curated skills are static
-   copies sourced from upstream, and the `brainstorming` edits live only in the live
-   copy — so a fresh machine won't auto-reproduce this curation. Pick one:
-   (a) vendor all 24 skill dirs into `~/dev/pi-elias/skills/` and expand `CUSTOM_SKILLS`
-       to whole-directory copies in both scripts (reproduces exactly; bloats the repo;
-       diverges from "upstream is source of truth");
-   (b) teach `install.sh` to fetch the curated subset from upstream at install time,
-       then re-apply the `brainstorming` edits (lean repo; more script logic);
-   (c) leave as-is (manual re-copy from upstream + re-apply edits; current behavior).
+2. ~~Reproducibility gap~~ **RESOLVED (vendored).** All 24 skill dirs now live in this
+   repo under `skills/` and both scripts deploy every dir — a fresh-machine
+   `install.sh` reproduces the curation exactly.
 3. Periodically re-sync `cp ~/.pi/agent/settings.json ~/dev/pi-elias/settings.json`
    (pi rewrites the live one; see the note in `update.sh`).
+   Likewise for skills: edit in repo, then `~/dev/pi-elias/update.sh` deploys to live.
+   (To capture a live-only edit back into the repo, re-copy that dir:
+   `cp -R ~/.pi/agent/skills/<name>/. ~/dev/pi-elias/skills/<name>/`.)
 
 ## Maintenance
-- Static copies; they do not receive upstream updates unless you manually pull and re-copy.
-- Superpowers: `github.com/obra/superpowers` · Matt Pocock: `github.com/mattpocock/skills`.
-- To update a skill: pull upstream, review the diff, merge desired changes into
-  `~/.pi/agent/skills/<skill-name>/` (and re-apply the `brainstorming` edits if updating
-  that one).
-- To add/remove a skill: edit `~/.pi/agent/skills/`, then update this file.
+- Skills are vendored in this repo (`skills/`); this repo is the source of truth. They
+  do NOT auto-update from upstream.
+- Upstreams (only consulted when you choose to pull): superpowers
+  `github.com/obra/superpowers` · Matt Pocock `github.com/mattpocock/skills`.
+- To pull an upstream update for a skill: copy the new version into `skills/<name>/`,
+  review the diff, re-apply the `brainstorming` edits if it's `brainstorming`, commit,
+  then run `update.sh` to deploy to live.
+- To add a skill: drop a dir under `skills/`, commit, run `update.sh`.
+- To remove a skill: delete its dir under `skills/`, commit; then also
+  `rm -rf ~/.pi/agent/skills/<name>` (the deploy loop only (re)deploys dirs that
+  exist in the repo — it won't remove a skill you deleted from the repo).
+- After any live `settings.json` change, re-sync into the repo:
+  `cp ~/.pi/agent/settings.json ~/dev/pi-elias/settings.json`.
