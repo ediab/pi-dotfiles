@@ -23,8 +23,7 @@
     "npm:@ff-labs/pi-fff",
     "npm:pi-code-previews",
     "npm:pi-lsp",
-    "npm:@firstpick/pi-themes-bundle",
-    "npm:pi-secret-guard"
+    "npm:@firstpick/pi-themes-bundle"
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
