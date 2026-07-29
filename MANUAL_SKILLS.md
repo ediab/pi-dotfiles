@@ -1,13 +1,13 @@
 # Manual Skills
 
-The curated set of 24 skills is **vendored** in this repo at `skills/` (whole
+The curated set of 25 skills is **vendored** in this repo at `skills/` (whole
 directories, including subdocs) and deployed to `~/.pi/agent/skills/` by
 `install.sh`/`update.sh`. This repo is the source of truth: upstream repos
 (superpowers / mattpocock) are only consulted when you choose to pull an update.
 Two upstream sources were originally copied in: superpowers (obra) and mattpocock.
 This file records the **curated** state after combining the two schools (2025-07-15).
 
-## Curated set — 24 skills
+## Curated set — 25 skills
 
 ### Superpowers kept (6) — ideation + mechanics + behavioral discipline
 | Skill | Role |
@@ -19,17 +19,17 @@ This file records the **curated** state after combining the two schools (2025-07
 | `receiving-code-review` | Handle review feedback w/ rigor, anti-sycophancy. Already source-agnostic — works with Matt `code-review`, no edit needed. |
 | `verification-before-completion` | Fresh-evidence discipline for "done" claims. |
 
-### Matt Pocock kept (18) — pipeline + the rest
-`setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `implement`, `tdd`,
+### Matt Pocock kept (19) — pipeline + the rest
+`setup-matt-pocock-skills`, `to-spec`, `to-tickets`, `wayfinder`, `implement`, `tdd`,
 `diagnosing-bugs`, `code-review`, `codebase-design`, `domain-modeling`, `prototype`,
 `research`, `resolving-merge-conflicts`, `grilling`, `grill-me`, `grill-with-docs`,
 `handoff`, `teach`, `writing-great-skills`.
 
-## Dropped (9)
+## Dropped (8)
 - Superpowers (7): `test-driven-development`, `subagent-driven-development`,
   `executing-plans`, `writing-plans`, `systematic-debugging`,
   `requesting-code-review`, `writing-skills`.
-- Matt Pocock (2): `triage`, `wayfinder`.
+- Matt Pocock (1): `triage`.
 
 ## Rationale (the 10 grilling decisions)
 1. **TDD posture — bug-mandatory.** Keep Matt `tdd` (advisory red-green-refactor) +
@@ -41,7 +41,7 @@ This file records the **curated** state after combining the two schools (2025-07
    `finishing-a-development-branch`. Drop SP `subagent-driven-development` + `executing-plans`.
 3. **Planning — light Matt.** Keep Matt `to-spec` + `to-tickets` (run
    `/setup-matt-pocock-skills`); drop Matt `triage` + `wayfinder` (heavy state
-   machines); drop SP `writing-plans`; rewire `brainstorming` → `to-spec`.
+   machines; _`wayfinder` later re-added 2026-07-29 — see Addendum below_); drop SP `writing-plans`; rewire `brainstorming` → `to-spec`.
 4. **Debugging.** Keep Matt `diagnosing-bugs`; drop SP `systematic-debugging`.
 5. **Code review.** Keep Matt `code-review` + SP `receiving-code-review`; drop SP
    `requesting-code-review`.
@@ -66,7 +66,7 @@ This file records the **curated** state after combining the two schools (2025-07
 - `finishing-a-development-branch/SKILL.md`: **no edit** — already standalone
   (detects its own worktree vs. normal-repo state; doesn't reference the dropped
   `executing-plans`/`subagent-driven-development`).
-- The other 23 skill dirs are vendored verbatim from upstream (unchanged). 24 total.
+- The other 24 skill dirs are vendored verbatim from upstream (unchanged). 25 total.
 
 ## Deployment
 - `install.sh` / `update.sh` deploy **every directory** under `skills/` as a whole-dir
@@ -96,7 +96,7 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
 ## Follow-ups
 1. **Run `/setup-matt-pocock-skills` per repo** where you want `to-spec`/`to-tickets`.
    It is per-repo tracker config (GitHub / GitLab / local markdown), not global.
-2. ~~Reproducibility gap~~ **RESOLVED (vendored).** All 24 skill dirs now live in this
+2. ~~Reproducibility gap~~ **RESOLVED (vendored).** All 25 skill dirs now live in this
    repo under `skills/` and both scripts deploy every dir — a fresh-machine
    `install.sh` reproduces the curation exactly.
 3. Periodically re-sync `cp ~/.pi/agent/settings.json ~/dev/pi-elias/settings.json`
@@ -119,3 +119,14 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
   exist in the repo — it won't remove a skill you deleted from the repo).
 - After any live `settings.json` change, re-sync into the repo:
   `cp ~/.pi/agent/settings.json ~/dev/pi-elias/settings.json`.
+
+## Addendum
+
+- **2026-07-29 — `wayfinder` re-added.** Reversed decision #3's drop of Matt
+  `wayfinder`. It pairs with `to-spec`/`to-tickets` for efforts too large for one
+  agent session, charted as a map of decision tickets on the repo's issue tracker.
+  Dropped originally as a "heavy state machine"; re-added on explicit request after
+  confirming its dependencies (`/grilling`, `/domain-modeling`, `/research`,
+  `/prototype`, `/setup-matt-pocock-skills`) are all already installed. Vendored
+  verbatim from upstream — no edits. Curated set now 25 (SP 6 + Matt 19). Re-deploy
+  to any other machine with `~/dev/pi-elias/update.sh` (or `install.sh`).
