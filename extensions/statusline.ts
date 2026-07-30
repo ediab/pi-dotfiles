@@ -42,6 +42,7 @@ const I_CTX = "⊡";
 const I_CLAUDE = "※";
 const I_MCP = "⊕";
 const I_THINK = "✶";
+const I_PONY = "🐴";
 
 // ── Theme helpers ──────────────────────────────────────────────────
 
@@ -286,6 +287,9 @@ async function buildHud(ctx: any): Promise<string[]> {
 	}
 
 	lines.push(line2.join(` ${s} `));
+
+	// ── Line 3: Ponytail ──
+	lines.push(`${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", "full")}`);
 
 	return lines;
 }

@@ -5,15 +5,14 @@ set -euo pipefail
 
 PACKAGES=(
   npm:pi-web-access
-  npm:@yusukeshib/pi-notify
   npm:pi-mcp-adapter
-  npm:pi-compound-engineering
-  npm:pi-ask-user
   npm:pi-subagents
   npm:@ff-labs/pi-fff
   npm:pi-code-previews
   npm:pi-lsp
   npm:@firstpick/pi-themes-bundle
+  npm:@juicesharp/rpiv-ask-user-question
+  npm:pi-ponytail
 )
 
 # Skills bundled in this repo (whole directories, including subdocs).
