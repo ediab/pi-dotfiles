@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.pi-elias.sync-settings</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/eliasdiab/dev/pi-elias/sync-settings.sh</string>
+	</array>
+	<key>WatchPaths</key>
+	<array>
+		<string>/Users/eliasdiab/.pi/agent/settings.json</string>
+	</array>
+	<key>StandardOutPath</key>
+	<string>/tmp/com.pi-elias.sync-settings.out</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/com.pi-elias.sync-settings.err</string>
+</dict>
+</plist>
