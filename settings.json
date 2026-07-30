@@ -1,31 +1,21 @@
 {
-  "lastChangelogVersion": "0.82.1",
+  "lastChangelogVersion": "0.83.0",
   "theme": "tokyo-night",
-  "defaultProvider": "deepseek",
+  "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-pro",
-  "defaultThinkingLevel": "max",
+  "defaultThinkingLevel": "high",
   "packages": [
     "npm:pi-web-access",
-    "npm:@yusukeshib/pi-notify",
     "npm:pi-mcp-adapter",
-    {
-      "source": "npm:pi-compound-engineering",
-      "skills": [
-        "ce-compound",
-        "ce-compound-refresh",
-        "ce-setup",
-        "ce-ideate"
-      ],
-      "extensions": []
-    },
-    "npm:pi-ask-user",
     "npm:pi-subagents",
     "npm:@ff-labs/pi-fff",
     "npm:pi-code-previews",
     "npm:pi-lsp",
-    "npm:@firstpick/pi-themes-bundle"
+    "npm:@firstpick/pi-themes-bundle",
+    "npm:@juicesharp/rpiv-ask-user-question",
+    "npm:pi-ponytail"
   ],
-  "enableInstallTelemetry": false,
+  "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
   "powerline": true,
   "breadcrumb": "inner",
