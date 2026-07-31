@@ -11,7 +11,6 @@
     "npm:@ff-labs/pi-fff",
     "npm:pi-code-previews",
     "npm:pi-lsp",
-    "npm:@firstpick/pi-themes-bundle",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-ponytail"
   ],
