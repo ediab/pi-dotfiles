@@ -19,7 +19,7 @@ PACKAGES=(
 # Add/remove a skill by adding/removing its directory under skills/; no script edit needed.
 
 # Custom extensions bundled in this repo (single-file .ts -> ~/.pi/agent/extensions/).
-CUSTOM_EXTENSIONS=(clear commit-push-pr exit no-footer statusline)
+CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline)
 # Custom directory extensions bundled in this repo (dir with index.ts -> ~/.pi/agent/extensions/<name>/).
 CUSTOM_EXTENSION_DIRS=(plan-mode)
 

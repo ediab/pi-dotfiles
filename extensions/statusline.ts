@@ -4,6 +4,7 @@
  * ctx.ui.theme instead of a hardcoded Monokai Pro palette.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
@@ -31,6 +32,8 @@ let sessionStartTime = 0;
 let lastCtx: any = null;
 let tickInterval: ReturnType<typeof setInterval> | null = null;
 let thinkingLevel = "";
+let hudText = "";
+let requestFooterRender: (() => void) | null = null;
 
 // ── Icons (plain glyphs, no emoji — matches shannon's set) ─────────
 
@@ -216,13 +219,12 @@ function readModel(ctx: any): { provider: string; id: string } {
 	return { provider: "", id: "" };
 }
 
-async function buildHud(ctx: any): Promise<string[]> {
-	const lines: string[] = [];
+async function buildHud(ctx: any): Promise<string> {
 	const theme: Theme = ctx?.ui?.theme;
 	const s = sep(theme);
 	const dir = ctx?.cwd ?? "";
 
-	// ── Line 1: Model + Thinking + Context ──
+	// Main line: model + thinking + context + path + git + configs + duration.
 	const line1: string[] = [];
 
 	const { provider, id } = readModel(ctx);
@@ -253,9 +255,7 @@ async function buildHud(ctx: any): Promise<string[]> {
 		}
 	} catch { /* context usage unavailable */ }
 
-	lines.push(line1.join(` ${s} `));
-
-	// ── Line 2: Path + Git + Configs + Duration ──
+	// Path + Git + Configs + Duration.
 	const line2: string[] = [];
 
 	if (dir) {
@@ -286,20 +286,61 @@ async function buildHud(ctx: any): Promise<string[]> {
 		line2.push(`${fg(theme, "dim", I_CLOCK)} ${fg(theme, "dim", fmtDuration(Date.now() - sessionStartTime))}`);
 	}
 
-	lines.push(line2.join(` ${s} `));
+	return [...line1, ...line2].join(` ${s} `);
+}
 
-	// ── Line 3: Ponytail ──
-	lines.push(`${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", "full")}`);
+function ponytailMode(ctx: any): string {
+	try {
+		const entries = ctx?.sessionManager?.getBranch?.() ?? [];
+		for (let i = entries.length - 1; i >= 0; i--) {
+			if (entries[i]?.type === "custom" && entries[i]?.customType === "ponytail-mode") {
+				return entries[i]?.data?.mode ?? "full";
+			}
+		}
+	} catch { /* use the default */ }
+	return "full";
+}
 
-	return lines;
+function extensionLine(theme: Theme, footerData: any, ctx: any, width: number): string {
+	const statuses = Array.from(footerData.getExtensionStatuses?.() ?? [])
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(([, text]) => String(text).replace(/[\r\n\t]/g, " ").replace(/ +/g, " ").trim())
+		.filter(Boolean)
+		.join(" ");
+	const fallback = `${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", ponytailMode(ctx))}`;
+	return truncateToWidth([fallback, statuses].filter(Boolean).join(" "), Math.max(1, width), fg(theme, "dim", "..."));
 }
 
 // ── Refresh + entry ────────────────────────────────────────────────
 
 function refreshHud(ctx: any) {
-	buildHud(ctx).then(lines => {
-		if (lines.length > 0) ctx.ui.setWidget("elias-statusline", lines, { placement: "belowEditor" });
+	buildHud(ctx).then(text => {
+		hudText = text;
+		requestFooterRender?.();
 	}).catch(() => {});
+}
+
+function installFooter(ctx: any) {
+	ctx.ui.setFooter((tui: any, theme: Theme, footerData: any) => {
+		const requestRender = () => tui.requestRender();
+		requestFooterRender = requestRender;
+		const unsubscribe = footerData.onBranchChange(() => refreshHud(ctx));
+
+		return {
+			dispose() {
+				unsubscribe();
+				if (requestFooterRender === requestRender) requestFooterRender = null;
+			},
+			invalidate() {},
+			render(width: number): string[] {
+				const safeWidth = Math.max(1, width);
+				return [
+					...wrapTextWithAnsi(hudText, safeWidth),
+					extensionLine(theme, footerData, ctx, safeWidth),
+				];
+			},
+		};
+	});
 }
 
 export default function (pi: ExtensionAPI) {
@@ -309,6 +350,8 @@ export default function (pi: ExtensionAPI) {
 
 	pi.on("session_start", (_event, ctx) => {
 		sessionStartTime = Date.now();
+		hudText = "";
+		installFooter(ctx);
 		updateCtx(ctx);
 		thinkingLevel = pi.getThinkingLevel?.() ?? "";
 		if (tickInterval) clearInterval(tickInterval);
