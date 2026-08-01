@@ -1,9 +1,9 @@
 {
   "lastChangelogVersion": "0.83.0",
   "theme": "terminal",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-luna",
-  "defaultThinkingLevel": "xhigh",
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-mcp-adapter",
