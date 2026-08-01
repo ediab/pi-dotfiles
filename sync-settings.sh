@@ -17,5 +17,5 @@ fi
 
 cp "$LIVE" "$DEST"
 cd "$REPO"
-git add settings.json
+git add home/settings.json
 git commit -m "auto: sync settings.json from pi" --allow-empty
