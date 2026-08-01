@@ -7,8 +7,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
-# Skills deployed below = every dir in $SCRIPT_DIR/skills/ (whole-dir copies).
-CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline)
+# Skills deployed below = every dir in $SCRIPT_DIR/home/skills/ (whole-dir copies).
+CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
 CUSTOM_EXTENSION_DIRS=(plan-mode)
 
 echo "==> 1/3  pi + packages"
@@ -19,33 +19,34 @@ echo "==> 2/3  settings.json (repo → live)"
 # this file (changelog version, installed-packages list); if you edit the live file,
 # re-sync it back into the repo (`cp ~/.pi/agent/settings.json ~/Dev/pi-elias/settings.json`)
 # before re-running update.sh to avoid clobbering local changes.
-cp "$SCRIPT_DIR/settings.json" "$HOME/.pi/agent/settings.json" \
+cp "$SCRIPT_DIR/home/settings.json" "$HOME/.pi/agent/settings.json" \
   && echo "    settings.json  re-synced" \
-  || echo "    FAILED: settings.json"
+  || echo "    FAILED: home/settings.json"
 
-echo "==> 3/3  skills (every dir in $SCRIPT_DIR/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
+echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
-for src in "$SCRIPT_DIR/skills"/*/; do
+for src in "$SCRIPT_DIR/home/skills"/*/; do
   skill="$(basename "$src")"
   rm -rf "$PI_SKILLS_DIR/$skill"
-  cp -R "$SCRIPT_DIR/skills/$skill" "$PI_SKILLS_DIR/"
+  cp -R "$SCRIPT_DIR/home/skills/$skill" "$PI_SKILLS_DIR/"
   echo "    $skill  re-synced"
 done
 shopt -u nullglob
 
 mkdir -p "$PI_EXTENSIONS_DIR"
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
-  src="$SCRIPT_DIR/extensions/$ext.ts"
+  src="$SCRIPT_DIR/home/extensions/$ext.ts"
+  [ -f "$src" ] || src="$SCRIPT_DIR/home/extensions/$ext.js"
   if [ ! -f "$src" ]; then
     echo "  MISSING: $ext (no $src) — run from a clone of the repo"
     continue
   fi
-  cp "$src" "$PI_EXTENSIONS_DIR/$ext.ts"
+  cp "$src" "$PI_EXTENSIONS_DIR/$(basename "$src")"
   echo "    $ext  re-synced"
 done
 for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
-  src="$SCRIPT_DIR/extensions/$ext"
+  src="$SCRIPT_DIR/home/extensions/$ext"
   if [ ! -d "$src" ]; then
     echo "  MISSING: $ext (no $src/) — run from a clone of the repo"
     continue

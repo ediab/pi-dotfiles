@@ -10,10 +10,10 @@ echo "==> 1/4  settings.json"
 rsync -az "$PI_DIR/settings.json" "$VPS_HOST:~/.pi/agent/settings.json"
 
 echo "==> 2/4  skills"
-rsync -az --delete "$REPO_DIR/skills/" "$VPS_HOST:~/.pi/agent/skills/"
+rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 
 echo "==> 3/4  extensions"
-rsync -az --delete "$REPO_DIR/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
+rsync -az --delete "$REPO_DIR/home/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
 
 echo "==> 4/4  reconcile packages"
 # Read the canonical package list from the freshly deployed settings.json on the VPS,

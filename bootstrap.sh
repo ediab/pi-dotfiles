@@ -10,17 +10,17 @@ PACKAGES=(
   npm:@ff-labs/pi-fff
   npm:pi-code-previews
   npm:pi-lsp
-  npm:@firstpick/pi-themes-bundle
+  npm:pi-terminal-theme
   npm:@juicesharp/rpiv-ask-user-question
   npm:pi-ponytail
   npm:pi-blackhole
 )
 
-# Skills bundled in this repo (whole directories, including subdocs).
-# Add/remove a skill by adding/removing its directory under skills/; no script edit needed.
+# Skills bundled in this repo under home/skills (whole directories, including subdocs).
+# Add/remove a skill by adding/removing its directory under home/skills/; no script edit needed.
 
-# Custom extensions bundled in this repo (single-file .ts -> ~/.pi/agent/extensions/).
-CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline)
+# Custom extensions bundled in this repo under home/extensions (single-file .ts -> ~/.pi/agent/extensions/).
+CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
 # Custom directory extensions bundled in this repo (dir with index.ts -> ~/.pi/agent/extensions/<name>/).
 CUSTOM_EXTENSION_DIRS=(plan-mode)
 
@@ -45,21 +45,21 @@ echo "==> 2/3  packages (${#PACKAGES[@]} total)"
 # Deploy canonical pi agent settings.json from this repo as the base; pi install
 # below appends each installed package into it. Repo is source of truth; live edits
 # to settings.json should be re-synced back here to avoid backup drift.
-cp "$SCRIPT_DIR/settings.json" "$HOME/.pi/agent/settings.json" \
+cp "$SCRIPT_DIR/home/settings.json" "$HOME/.pi/agent/settings.json" \
   && echo "    settings.json  deployed" \
-  || echo "    FAILED: settings.json"
+  || echo "    FAILED: home/settings.json"
 
 for pkg in "${PACKAGES[@]}"; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done
 
-echo "==> 3/3  skills (every dir in $SCRIPT_DIR/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
+echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
-for src in "$SCRIPT_DIR/skills"/*/; do
+for src in "$SCRIPT_DIR/home/skills"/*/; do
   skill="$(basename "$src")"
   rm -rf "$PI_SKILLS_DIR/$skill"
-  cp -R "$SCRIPT_DIR/skills/$skill" "$PI_SKILLS_DIR/"
+  cp -R "$SCRIPT_DIR/home/skills/$skill" "$PI_SKILLS_DIR/"
   echo "    $skill  installed"
 done
 shopt -u nullglob
@@ -67,16 +67,17 @@ shopt -u nullglob
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
 mkdir -p "$PI_EXTENSIONS_DIR"
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
-  src="$SCRIPT_DIR/extensions/$ext.ts"
+  src="$SCRIPT_DIR/home/extensions/$ext.ts"
+  [ -f "$src" ] || src="$SCRIPT_DIR/home/extensions/$ext.js"
   if [ ! -f "$src" ]; then
     echo "  MISSING: $ext (no $src) — clone the repo instead of curl|bash"
     continue
   fi
-  cp "$src" "$PI_EXTENSIONS_DIR/$ext.ts"
+  cp "$src" "$PI_EXTENSIONS_DIR/$(basename "$src")"
   echo "    $ext  installed"
 done
 for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
-  src="$SCRIPT_DIR/extensions/$ext"
+  src="$SCRIPT_DIR/home/extensions/$ext"
   if [ ! -d "$src" ]; then
     echo "  MISSING: $ext (no $src/) — clone the repo instead of curl|bash"
     continue
@@ -88,8 +89,8 @@ done
 
 # Seed ~/.pi/agent/AGENTS.md from the sanitized repo copy. Only when absent — never clobber
 # local-only sections like VPS access details.
-if [ ! -f "$HOME/.pi/agent/AGENTS.md" ] && [ -f "$SCRIPT_DIR/AGENTS.md" ]; then
-  cp "$SCRIPT_DIR/AGENTS.md" "$HOME/.pi/agent/AGENTS.md"
+if [ ! -f "$HOME/.pi/agent/AGENTS.md" ] && [ -f "$SCRIPT_DIR/home/AGENTS.md" ]; then
+  cp "$SCRIPT_DIR/home/AGENTS.md" "$HOME/.pi/agent/AGENTS.md"
   echo "    AGENTS.md  seeded (add any local-only sections, e.g. VPS access, manually)"
 else
   echo "    AGENTS.md  already present — left untouched (local edits preserved)"
@@ -100,7 +101,7 @@ command -v pi >/dev/null 2>&1 && echo "    pi: $(pi --version)" || echo "    pi:
 echo "    packages:"
 pi list 2>/dev/null || echo "    pi list failed"
 shopt -s nullglob
-for src in "$SCRIPT_DIR/skills"/*/; do
+for src in "$SCRIPT_DIR/home/skills"/*/; do
   skill="$(basename "$src")"
   [ -f "$PI_SKILLS_DIR/$skill/SKILL.md" ] && echo "    ok: $skill" || echo "    MISSING: $skill"
 done

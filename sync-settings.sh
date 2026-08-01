@@ -5,7 +5,7 @@ set -euo pipefail
 
 LIVE="$HOME/.pi/agent/settings.json"
 REPO="$HOME/dev/pi-elias"
-DEST="$REPO/settings.json"
+DEST="$REPO/home/settings.json"
 
 # ponytail: debounce via sleep — launchd may fire multiple times in a burst
 sleep 5

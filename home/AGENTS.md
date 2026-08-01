@@ -79,7 +79,7 @@ Flow: `mcp({ tool: "context7_resolve-library-id", args: '{"libraryName": "react"
 
 ## Custom pi commands
 
-Slash commands added via extensions in `~/dev/pi-elias/extensions/` (synced to `~/.pi/agent/extensions/` by `install.sh`/`update.sh`):
+Slash commands added via extensions in `~/dev/pi-elias/home/extensions/` (synced to `~/.pi/agent/extensions/` by `bootstrap.sh`/`rebuild.sh`):
 
 - `/clear` — clear the conversation, start a fresh session (alias for `/new`)
 - `/commit-push-pr` — commit changes, push, and open a PR
@@ -87,9 +87,9 @@ Slash commands added via extensions in `~/dev/pi-elias/extensions/` (synced to `
 
 ## pi-elias sync
 
-When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-elias` so they're captured for reinstall on other machines. Run `~/dev/pi-elias/update.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
+When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-elias` so they're captured for reinstall on other machines. Run `~/dev/pi-elias/rebuild.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
 
-**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`install.sh` PACKAGES list, `settings.json`, `skills/`, `extensions/`) so other machines reinstall identically.
+**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`bootstrap.sh` PACKAGES list, `home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically.
 
 ---
 
@@ -104,7 +104,7 @@ Symlinked (edit in `~/dev/configs/` directly):
 - `vscode/settings.json` → `~/Library/Application Support/Code/User/settings.json`
 - `vscode/keybindings.json` → `~/Library/Application Support/Code/User/keybindings.json`
 
-Pi agent files — `settings.json`, `extensions/no-footer.ts`, `extensions/statusline.ts` — are **not** in configs. They live in `~/dev/pi-elias/` and are deployed to `~/.pi/agent/` as copies by `install.sh`/`update.sh`. Edit them in `~/dev/pi-elias/`, then run `~/dev/pi-elias/update.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
+Pi agent files — `settings.json`, `extensions/no-footer.ts`, `extensions/statusline.ts` — are **not** in configs. They live in `~/dev/pi-elias/home/` and are deployed to `~/.pi/agent/` as copies by `bootstrap.sh`/`rebuild.sh`. Edit them in `~/dev/pi-elias/home/`, then run `~/dev/pi-elias/rebuild.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
 
 
 
