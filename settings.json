@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.83.0",
   "theme": "terminal",
-  "defaultProvider": "opencode-go",
+  "defaultProvider": "deepseek",
   "defaultModel": "deepseek-v4-flash",
   "defaultThinkingLevel": "max",
   "packages": [
@@ -19,6 +19,8 @@
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
   "powerline": true,
+  "steeringMode": "all",
+  "followUpMode": "all",
   "breadcrumb": "inner",
   "header": true,
   "header-info": true,
