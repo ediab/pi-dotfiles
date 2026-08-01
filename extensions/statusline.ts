@@ -193,8 +193,8 @@ function countConfigs(dir: string) {
 		if (existsSync(join(dir, "CLAUDE.md"))) agentsMd++;
 
 		try {
-			const mcpCache = JSON.parse(readFileSync(join(home, ".pi", "agent", "mcp-cache.json"), "utf8"));
-			const servers = mcpCache?.servers;
+			const mcpConfig = JSON.parse(readFileSync(join(home, ".pi", "agent", "mcp.json"), "utf8"));
+			const servers = mcpConfig?.mcpServers;
 			if (servers && typeof servers === "object") mcps = Object.keys(servers).length;
 		} catch { /* ignore */ }
 	} catch { /* ignore */ }
@@ -301,14 +301,9 @@ function ponytailMode(ctx: any): string {
 	return "full";
 }
 
-function extensionLine(theme: Theme, footerData: any, ctx: any, width: number): string {
-	const statuses = Array.from(footerData.getExtensionStatuses?.() ?? [])
-		.sort(([a], [b]) => a.localeCompare(b))
-		.map(([, text]) => String(text).replace(/[\r\n\t]/g, " ").replace(/ +/g, " ").trim())
-		.filter(Boolean)
-		.join(" ");
-	const fallback = `${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", ponytailMode(ctx))}`;
-	return truncateToWidth([fallback, statuses].filter(Boolean).join(" "), Math.max(1, width), fg(theme, "dim", "..."));
+function extensionLine(theme: Theme, ctx: any, width: number): string {
+	const ponytail = `${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", ponytailMode(ctx))}`;
+	return truncateToWidth(ponytail, Math.max(1, width), fg(theme, "dim", "..."));
 }
 
 // ── Refresh + entry ────────────────────────────────────────────────
@@ -336,7 +331,7 @@ function installFooter(ctx: any) {
 				const safeWidth = Math.max(1, width);
 				return [
 					...wrapTextWithAnsi(hudText, safeWidth),
-					extensionLine(theme, footerData, ctx, safeWidth),
+					extensionLine(theme, ctx, safeWidth),
 				];
 			},
 		};

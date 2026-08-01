@@ -13,6 +13,7 @@ PACKAGES=(
   npm:@firstpick/pi-themes-bundle
   npm:@juicesharp/rpiv-ask-user-question
   npm:pi-ponytail
+  npm:pi-blackhole
 )
 
 # Skills bundled in this repo (whole directories, including subdocs).
