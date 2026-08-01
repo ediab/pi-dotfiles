@@ -89,7 +89,7 @@ Slash commands added via extensions in `~/dev/pi-elias/home/extensions/` (synced
 
 When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-elias` so they're captured for reinstall on other machines. Run `~/dev/pi-elias/rebuild.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
 
-**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`bootstrap.sh` PACKAGES list, `home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically.
+**Keep pi-elias in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-elias` (`home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically. Packages need no manual mirroring — `sync-settings.sh` records `pi install`/`pi uninstall` into `home/settings.json` automatically.
 
 ---
 

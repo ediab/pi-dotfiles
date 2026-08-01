@@ -9,11 +9,11 @@ Running the bootstrap installs:
 
 - **pi harness** — via npm (`@earendil-works/pi-coding-agent`), falling back to the official
   curl installer (`https://pi.dev/install.sh`) if npm fails.
-- **pi packages** — the `PACKAGES` array in `bootstrap.sh` is the canonical list (web-access,
-  subagents, ponytail, ask-user, compound-engineering, and more). See `bootstrap.sh` rather
-  than this README — it's the source of truth so the two never drift.
-  Package-installed skills (librarian, the `ce-*` suite, `ask-user`, superpowers, etc.) come
-  along automatically with their packages — nothing extra to do.
+- **pi packages** — the canonical list is the `packages` array in `home/settings.json`. It stays
+  in sync automatically: when you `pi install` / `pi uninstall` on a live machine,
+  `sync-settings.sh` records the change in the repo. `bootstrap.sh` installs every package
+  in that list. Package-installed skills (librarian, the `ce-*` suite, `ask-user`,
+  superpowers, etc.) come along automatically with their packages — nothing extra to do.
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
 - **Custom extensions** — every file under `home/extensions/` (`clear`, `commit-push-pr`,
@@ -50,7 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/ediab/pi-elias/main/bootstrap.sh | 
 `bootstrap.sh` does three things, in order:
 
 1. Installs the pi harness if it isn't already installed.
-2. Installs the `PACKAGES` list via `pi install` and deploys `home/settings.json`.
+2. Deploys `home/settings.json` and installs every package in its `packages` list.
 3. Copies `home/skills/`, `home/extensions/`, and seeds `home/AGENTS.md`.
 
 ## Daily use
@@ -68,7 +68,9 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`, a
 
 This repo is Elias's. If you clone it, review these before you run `bootstrap.sh`:
 
-- **Packages**: add/remove entries in the `PACKAGES` array at the top of `bootstrap.sh`.
+- **Packages**: `pi install <pkg>` / `pi uninstall <pkg>` on a live machine —
+  `sync-settings.sh` records it in `home/settings.json` — or edit `home/settings.json`'s
+  `packages` list directly.
 - **Skills**: add/remove a directory under `home/skills/` — no script edit needed, every
   dir is deployed automatically.
 - **Extensions**: add/remove a name in `CUSTOM_EXTENSIONS` or `CUSTOM_EXTENSION_DIRS` in

@@ -3,19 +3,6 @@
 # Does NOT install MCPs, auth keys, or provider/model settings.
 set -euo pipefail
 
-PACKAGES=(
-  npm:pi-web-access
-  npm:pi-mcp-adapter
-  npm:pi-subagents
-  npm:@ff-labs/pi-fff
-  npm:pi-code-previews
-  npm:pi-lsp
-  npm:pi-terminal-theme
-  npm:@juicesharp/rpiv-ask-user-question
-  npm:pi-ponytail
-  npm:pi-blackhole
-)
-
 # Skills bundled in this repo under home/skills (whole directories, including subdocs).
 # Add/remove a skill by adding/removing its directory under home/skills/; no script edit needed.
 
@@ -40,16 +27,26 @@ else
   command -v pi >/dev/null 2>&1 || { echo "    ERROR: pi still not on PATH"; exit 1; }
 fi
 
-echo "==> 2/3  packages (${#PACKAGES[@]} total)"
+echo "==> 2/3  packages (canonical list = home/settings.json, auto-synced from live by sync-settings.sh)"
 
 # Deploy canonical pi agent settings.json from this repo as the base; pi install
-# below appends each installed package into it. Repo is source of truth; live edits
-# to settings.json should be re-synced back here to avoid backup drift.
+# below appends each installed package into it. Live edits to settings.json are
+# re-synced back into the repo automatically by sync-settings.sh (launchd).
 cp "$SCRIPT_DIR/home/settings.json" "$HOME/.pi/agent/settings.json" \
   && echo "    settings.json  deployed" \
   || echo "    FAILED: home/settings.json"
 
-for pkg in "${PACKAGES[@]}"; do
+# Packages to install = string entries in settings.json's packages array (the same
+# list deploy-vps.sh reconciles against). No separate PACKAGES array to drift.
+PKGS="$(python3 - "$SCRIPT_DIR/home/settings.json" <<'PY'
+import json, sys
+print("\n".join(p for p in json.load(open(sys.argv[1]))["packages"] if isinstance(p, str)))
+PY
+)"
+if [ -z "$PKGS" ]; then
+  echo "    WARNING: no package list found in home/settings.json (clone the repo for the full set)"
+fi
+for pkg in $PKGS; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done
 
