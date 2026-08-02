@@ -1,18 +1,19 @@
-# Spec Document Reviewer Prompt Template
+# Design Document Reviewer Prompt Template
 
-Use this template when dispatching a spec document reviewer subagent.
+Use this template when dispatching a design document reviewer subagent.
 
-**Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
+**Purpose:** Verify the design document is complete, consistent, and ready for to-spec.
 
-**Dispatch after:** Spec document is written to docs/superpowers/specs/
+**Dispatch after:** Design document is written to docs/brainstorming/
 
 ```
 Subagent (general-purpose):
-  description: "Review spec document"
+  description: "Review design document"
   prompt: |
-    You are a spec document reviewer. Verify this spec is complete and ready for planning.
+    You are a design document reviewer. Verify this document is complete and ready for
+    formalization into a spec by to-spec.
 
-    **Spec to review:** [SPEC_FILE_PATH]
+    **Design document to review:** [FILE_PATH]
 
     ## What to Check
 
@@ -26,21 +27,21 @@ Subagent (general-purpose):
 
     ## Calibration
 
-    **Only flag issues that would cause real problems during implementation planning.**
+    **Only flag issues that would cause real problems during spec writing.**
     A missing section, a contradiction, or a requirement so ambiguous it could be
     interpreted two different ways — those are issues. Minor wording improvements,
     stylistic preferences, and "sections less detailed than others" are not.
 
-    Approve unless there are serious gaps that would lead to a flawed plan.
+    Approve unless there are serious gaps that would lead to a flawed spec.
 
     ## Output Format
 
-    ## Spec Review
+    ## Design Review
 
     **Status:** Approved | Issues Found
 
     **Issues (if any):**
-    - [Section X]: [specific issue] - [why it matters for planning]
+    - [Section X]: [specific issue] - [why it matters for the spec]
 
     **Recommendations (advisory, do not block approval):**
     - [suggestions for improvement]

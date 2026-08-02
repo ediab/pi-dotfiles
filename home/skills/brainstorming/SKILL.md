@@ -20,9 +20,9 @@ When this skill is active, work through these items in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit (captures design rationale; the canonical PRD is produced by to-spec in step 9)
+6. **Write design doc** — save to `docs/brainstorming/YYYY-MM-DD-<topic>-brainstorming.md` and commit (captures design rationale; the canonical PRD is produced by to-spec in step 9)
 7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
+8. **User reviews written design doc** — ask the user to review the written design doc before proceeding
 9. **Transition to spec** — invoke the to-spec skill to formalize the validated design into a PRD and publish it to the issue tracker
 
 ## Process Flow
@@ -98,13 +98,13 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
+- Write the validated design to `docs/brainstorming/YYYY-MM-DD-<topic>-brainstorming.md`
+  - (User preferences for location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
-**Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
+**Design Self-Review:**
+After writing the design document, look at it with fresh eyes:
 
 1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
@@ -116,7 +116,7 @@ Fix any issues inline. No need to re-review — just fix and move on.
 **User Review Gate:**
 After the spec review loop passes, ask the user to review the written spec before proceeding:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Design notes written and committed to `<path>`. Please review them and let me know if you want to make any changes before we start writing out the implementation plan."
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 

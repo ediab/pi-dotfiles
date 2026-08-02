@@ -62,8 +62,10 @@ This file records the **curated** state after combining the two schools (2025-07
 
 ## Edits applied (now live in the vendored copy at `skills/<skill>/`)
 - `brainstorming/SKILL.md`: advisory frontmatter; removed `<HARD-GATE>` block and the
-  "This Is Too Simple" anti-pattern; softened the checklist header; step 6 path →
-  `docs/specs/` with a note that `to-spec` produces the canonical PRD; step 9 →
+  "This Is Too Simple" anti-pattern; softened the checklist header; step 6 + Documentation
+  path → `docs/brainstorming/YYYY-MM-DD-<topic>-brainstorming.md` (renamed from the
+  `docs/superpowers/specs/…-design.md` naming — the file is a design record, not a spec;
+  `to-spec` produces the canonical PRD); step 9 →
   `to-spec`; the process-flow diagram terminal + edge → `to-spec`; terminal paragraph
   → `to-spec`; the "After the Design" Implementation section → `to-spec`.
 - `receiving-code-review/SKILL.md`: **no edit** — already source-agnostic (splits by
