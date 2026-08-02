@@ -103,3 +103,7 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 </issue-template>
 
 In either form, avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
+
+## 6. Implementation handoff
+
+Once the tickets are published, read and follow `handoff.md` in this skill's directory: it retains a durable parent-spec reference, approves per-ticket test seams, offers the execution-mode choice (direct vs subagents), and prepares the isolated feature worktree.

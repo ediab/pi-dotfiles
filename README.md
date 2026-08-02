@@ -12,8 +12,8 @@ Running the bootstrap installs:
 - **pi packages** — the canonical list is the `packages` array in `home/settings.json`. It stays
   in sync automatically: when you `pi install` / `pi uninstall` on a live machine,
   `sync-settings.sh` records the change in the repo. `bootstrap.sh` installs every package
-  in that list. Package-installed skills (librarian, the `ce-*` suite, `ask-user`,
-  superpowers, etc.) come along automatically with their packages — nothing extra to do.
+  in that list. Package-installed skills (pi-subagents, pi-ponytail, whatever else you add)
+  come along automatically with their packages — nothing extra to do.
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
 - **Custom extensions** — every file under `home/extensions/` (`clear`, `commit-push-pr`,
@@ -99,6 +99,58 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   keeps the repo copy fresh automatically; if you edit the live file by hand, re-sync it
   back into the repo before your next `./rebuild.sh` to avoid clobbering local changes.
 
+## Ticket execution workflow (2026-08)
+
+Until recently the curated pipeline ended at a seam: `brainstorming → to-spec → to-tickets → ?`.
+Matt's `to-tickets` deliberately stops after publishing agent-safe tickets, and a bare
+pi-subagents dispatch ("implement these tickets with subagents") does not by itself reproduce
+the guarantees Superpowers' subagent-driven development gave: an explicit approved ticket set,
+dependency ordering, fresh per-ticket contexts, independent Spec and Standards review, bounded
+fix loops, one reviewed commit per ticket, and a final whole-feature review and branch-finishing
+handoff.
+
+**What was decided** (research memo `MATT_SUPER.md`; implementation-ready spec
+`docs/plans/2026-08-02-002-feat-ticket-execution-workflow.md`):
+
+- **`to-tickets` gains an execution handoff.** After tickets are published, it retains a durable
+  parent-spec reference, gets your approval of per-ticket test seams, assesses the work, and
+  asks you to choose: `Implement directly` (the unchanged Matt `implement` flow, with the
+  commit-before-review order pinned so `code-review` sees a committed diff) or
+  `Implement with subagents` (a new `execute-tickets` coordinator). The agent recommends; you
+  always decide.
+- **`execute-tickets` is a thin parent-orchestration skill** that drives pi-subagents instead of
+  duplicating it: claim ticket → one fresh `worker` per ticket in a single feature worktree
+  (Matt `tdd` guidance, `context: fresh`, no turn/tool budgets) → parallel fresh Spec and
+  Standards reviewers → parent adjudication → resume the same worker for accepted fixes →
+  parent validates and creates one reviewed commit per ticket → tracker resolution. Capped at
+  three review/fix rounds, then a pause for you. Writers are sequential in v1.
+- **The configured tracker is the only durable ledger.** No second progress file: claims, base
+  SHAs, accepted/deferred findings, validation evidence, and commit SHAs are recorded per
+  ticket, so a fresh Pi session can continue mid-run from the feature worktree.
+- **Both modes converge** on a whole-feature Spec + Standards review from the original base,
+  the full configured verification suite, and one `finishing-a-development-branch` call.
+
+**Why this shape:**
+
+- It restores the useful Superpowers guarantees without reinstalling Superpowers' execution
+  stack, and without touching Matt's `implement`/`tdd`/`code-review` skills, pi-subagents
+  defaults, or any pi settings/models (project overrides would silently replace user agent
+  config).
+- It uses pi-subagents where it is strongest — fresh/forked contexts, parallel reviewers,
+  worker resumption — and only defines the missing ticket lifecycle itself. Reviewers get the
+  Spec/Standards rubrics **pasted by the parent**: the vendored `code-review` skill is
+  parent-orchestration text, so loading it into a read-only reviewer would contradict its own
+  no-subagents instruction.
+- Parallel writer worktrees were deliberately deferred: they produce patch handoffs and
+  integration complexity that measured throughput doesn't yet justify.
+- The `to-tickets` adaptation is **upstream-resilient**: the vendored Matt file receives only a
+  one-line pointer; all handoff content lives in `home/skills/to-tickets/handoff.md`, so a
+  future Matt update overwrites cleanly and re-adding the pointer is the only re-apply step.
+
+**Status:** implemented (2026-08-02); deployed to `~/.pi/agent/` via `rebuild.sh --sync-only`.
+The spec also added `rebuild.sh --sync-only`, which deploys skills and the memo without
+touching installed packages or settings.
+
 ## Repo tour
 
 - `home/` — the actual config files, mirroring `~/.pi/agent/` one-to-one:
@@ -113,7 +165,11 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   by `bootstrap.sh` step 4; watch path: `~/.pi/agent/settings.json`).
 - `deploy-vps.sh` — pushes `home/skills/`, `home/extensions/`, and the live settings to the
   VPS (`ssh vps`) and reconciles installed packages against the canonical list.
-- `docs/`, `CONCEPTS.md`, `HANDOFF.md`, `MANUAL_SKILLS.md` — project notes and archives.
+- `docs/plans/` — implementation-ready specs (e.g. `2026-08-02-002-feat-ticket-execution-workflow.md`);
+  `docs/solutions/tooling-decisions/` — ADR-style records of past tooling choices.
+- `MATT_SUPER.md` — research/decision memo for the ticket execution workflow (deployed to
+  `~/.pi/agent/` alongside the skills); `CONCEPTS.md`, `HANDOFF.md`, `MANUAL_SKILLS.md` —
+  project notes and archives.
 
 ## How the sync works
 

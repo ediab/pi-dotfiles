@@ -1,13 +1,13 @@
 # Manual Skills
 
-The curated set of 25 skills is **vendored** in this repo at `home/skills/` (whole
+The curated set of 26 skills is **vendored** in this repo at `home/skills/` (whole
 directories, including subdocs) and deployed to `~/.pi/agent/skills/` by
 `bootstrap.sh`/`rebuild.sh`. This repo is the source of truth: upstream repos
 (superpowers / mattpocock) are only consulted when you choose to pull an update.
 Two upstream sources were originally copied in: superpowers (obra) and mattpocock.
 This file records the **curated** state after combining the two schools (2025-07-15).
 
-## Curated set — 25 skills
+## Curated set — 26 skills
 
 ### Superpowers kept (6) — ideation + mechanics + behavioral discipline
 | Skill | Role |
@@ -25,6 +25,11 @@ This file records the **curated** state after combining the two schools (2025-07
 `research`, `resolving-merge-conflicts`, `grilling`, `grill-me`, `grill-with-docs`,
 `handoff`, `teach`, `writing-great-skills`.
 
+### Local bridge (1) — execution seam
+| Skill | Role |
+|-------|------|
+| `execute-tickets` | Parent-orchestrated ticket execution: fresh per-ticket workers, parallel Spec/Standards review, one reviewed commit per ticket, tracker as the only ledger. Bridges Matt `to-tickets`/`implement` to pi-subagents (2026-08-02 — see Addendum). |
+
 ## Dropped (8)
 - Superpowers (7): `test-driven-development`, `subagent-driven-development`,
   `executing-plans`, `writing-plans`, `systematic-debugging`,
@@ -38,7 +43,8 @@ This file records the **curated** state after combining the two schools (2025-07
    regression test.
 2. **Execution — lean Matt for the build.** Keep Matt `implement`; keep SP
    `dispatching-parallel-agents`, `using-git-worktrees`,
-   `finishing-a-development-branch`. Drop SP `subagent-driven-development` + `executing-plans`.
+   `finishing-a-development-branch`. Drop SP `subagent-driven-development` + `executing-plans`
+   (_2026-08-02: the execution seam is bridged by the local `execute-tickets` — see Addendum_).
 3. **Planning — light Matt.** Keep Matt `to-spec` + `to-tickets` (run
    `/setup-matt-pocock-skills`); drop Matt `triage` + `wayfinder` (heavy state
    machines; _`wayfinder` later re-added 2026-07-29 — see Addendum below_); drop SP `writing-plans`; rewire `brainstorming` → `to-spec`.
@@ -66,7 +72,12 @@ This file records the **curated** state after combining the two schools (2025-07
 - `finishing-a-development-branch/SKILL.md`: **no edit** — already standalone
   (detects its own worktree vs. normal-repo state; doesn't reference the dropped
   `executing-plans`/`subagent-driven-development`).
-- The other 24 skill dirs are vendored verbatim from upstream (unchanged). 25 total.
+- `to-tickets/SKILL.md`: **one pointer line only** — step 6 points to the new sibling
+  `to-tickets/handoff.md`, which holds the execution handoff (parent-spec retention,
+  test-seam approval, direct-vs-subagents chooser, isolated-worktree prep, direct-mode
+  commit-before-review order). The pointer is the only thing to re-apply when pulling an
+  upstream update; `handoff.md` never conflicts.
+- The other 23 skill dirs are vendored verbatim from upstream (unchanged). 26 total.
 
 ## Deployment
 - `bootstrap.sh` / `rebuild.sh` deploy **every directory** under `home/skills/` as a whole-dir
@@ -85,8 +96,9 @@ This file records the **curated** state after combining the two schools (2025-07
   (syncing live → repo; the live file already had it gone).
 
 ## End-to-end blend
-`brainstorming` (SP, advisory) → `to-spec` → `to-tickets` (Matt planning) →
-`implement` (Matt, advisory `/tdd`) → `tdd` (Matt; **mandatory for bugs** via
+`brainstorming` (SP, advisory) → `to-spec` → `to-tickets` (Matt planning + local execution
+handoff: test seams, mode chooser) → user chooses → `implement` (Matt, direct) **or**
+`execute-tickets` (local bridge, subagents) → `tdd` (Matt; **mandatory for bugs** via
 `diagnosing-bugs`) → `code-review` (Matt Standards+Spec) → `receiving-code-review` (SP
 discipline) → `verification-before-completion` (SP) → `finishing-a-development-branch`
 (SP integrate). Heavy/parallel work goes through `dispatching-parallel-agents` +
@@ -96,7 +108,7 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
 ## Follow-ups
 1. **Run `/setup-matt-pocock-skills` per repo** where you want `to-spec`/`to-tickets`.
    It is per-repo tracker config (GitHub / GitLab / local markdown), not global.
-2. ~~Reproducibility gap~~ **RESOLVED (vendored).** All 25 skill dirs now live in this
+2. ~~Reproducibility gap~~ **RESOLVED (vendored).** All 26 skill dirs now live in this
    repo under `home/skills/` and both scripts deploy every dir — a fresh-machine
    `bootstrap.sh` reproduces the curation exactly.
 3. Periodically re-sync `cp ~/.pi/agent/settings.json ~/dev/pi-elias/home/settings.json`
@@ -111,8 +123,9 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
 - Upstreams (only consulted when you choose to pull): superpowers
   `github.com/obra/superpowers` · Matt Pocock `github.com/mattpocock/skills`.
 - To pull an upstream update for a skill: copy the new version into `home/skills/<name>/`,
-  review the diff, re-apply the `brainstorming` edits if it's `brainstorming`, commit,
-  then run `rebuild.sh` to deploy to live.
+  review the diff, re-apply the `brainstorming` edits if it's `brainstorming`; re-add the
+  `handoff.md` pointer line if it's `to-tickets` (the handoff content lives in `handoff.md`,
+  which never conflicts); commit, then run `rebuild.sh` to deploy to live.
 - To add a skill: drop a dir under `home/skills/`, commit, run `rebuild.sh`.
 - To remove a skill: delete its dir under `home/skills/`, commit; then also
   `rm -rf ~/.pi/agent/skills/<name>` (the deploy loop only (re)deploys dirs that
@@ -130,3 +143,16 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
   `/prototype`, `/setup-matt-pocock-skills`) are all already installed. Vendored
   verbatim from upstream — no edits. Curated set now 25 (SP 6 + Matt 19). Re-deploy
   to any other machine with `~/dev/pi-elias/rebuild.sh` (or `bootstrap.sh`).
+
+- **2026-08-02 — ticket execution workflow.** Added the local bridge `execute-tickets` and
+  adapted `to-tickets` (research memo `MATT_SUPER.md`; implementation spec
+  `docs/plans/2026-08-02-002-feat-ticket-execution-workflow.md`). `to-tickets` gains a
+  one-line step 6 pointer to a new `to-tickets/handoff.md` sibling (parent-spec retention,
+  test-seam approval, direct-vs-subagents chooser, isolated-worktree prep, direct-mode
+  commit-before-review order); the pointer is the only re-apply step on upstream pulls.
+  `execute-tickets` is a thin parent-orchestration skill: fresh per-ticket workers with
+  Matt `tdd`, parallel Spec/Standards reviewers with parent-pasted rubrics, three-round
+  fix cap, one reviewed commit per ticket, tracker as the only ledger, whole-feature
+  review + `finishing-a-development-branch`. Curated set now 26 (SP 6 + Matt 19 + local
+  1). Re-deploy with `~/dev/pi-elias/rebuild.sh --sync-only` (skills + memo only, no
+  package/settings changes).
