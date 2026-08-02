@@ -4,7 +4,8 @@
 set -euo pipefail
 
 LIVE="$HOME/.pi/agent/settings.json"
-REPO="$HOME/dev/pi-elias"
+# Repo root = this script's location (works from any clone path, not just ~/dev/pi-elias).
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 DEST="$REPO/home/settings.json"
 
 # ponytail: debounce via sleep — launchd may fire multiple times in a burst

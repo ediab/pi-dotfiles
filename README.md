@@ -47,11 +47,13 @@ a clone — `bootstrap.sh` will warn and skip them; clone for the full set):
 curl -fsSL https://raw.githubusercontent.com/ediab/pi-elias/main/bootstrap.sh | bash
 ```
 
-`bootstrap.sh` does three things, in order:
+`bootstrap.sh` does four things, in order:
 
 1. Installs the pi harness if it isn't already installed.
 2. Deploys `home/settings.json` and installs every package in its `packages` list.
 3. Copies `home/skills/`, `home/extensions/`, and seeds `home/AGENTS.md`.
+4. Installs the launchd auto-sync agent (`com.pi-elias.sync-settings.plist`, templated
+   with your repo path) so `settings.json` changes flow back into the repo automatically.
 
 ## Daily use
 
@@ -68,7 +70,7 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`, a
 
 | What | Direction | How |
 |---|---|---|
-| `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
+| `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
 | `home/skills/`, `home/extensions/` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
 | `auth.json`, `mcp.json`, `models-store.json`, sessions, caches | never in repo | secrets and runtime state, by design |
@@ -107,7 +109,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
 - `rebuild.sh` — re-apply the config after any change. Run this every time.
 - `sync-settings.sh` — auto-syncs the live `~/.pi/agent/settings.json` back into
   `home/settings.json` when pi rewrites it. Triggered by the launchd agent
-  `com.pi-elias.sync-settings.plist` (watch path: `~/.pi/agent/settings.json`).
+  `com.pi-elias.sync-settings.plist` (a template in this repo, installed and path-substituted
+  by `bootstrap.sh` step 4; watch path: `~/.pi/agent/settings.json`).
 - `deploy-vps.sh` — pushes `home/skills/`, `home/extensions/`, and the live settings to the
   VPS (`ssh vps`) and reconciles installed packages against the canonical list.
 - `docs/`, `CONCEPTS.md`, `HANDOFF.md`, `MANUAL_SKILLS.md` — project notes and archives.

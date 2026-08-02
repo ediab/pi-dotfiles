@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<!-- TEMPLATE: bootstrap.sh substitutes the repo path and $HOME before installing this into ~/Library/LaunchAgents/ (launchd does not expand ~). -->
 <dict>
 	<key>Label</key>
 	<string>com.pi-elias.sync-settings</string>

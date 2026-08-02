@@ -15,7 +15,7 @@ CUSTOM_EXTENSION_DIRS=(plan-mode)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"   # note: 'agent' singular — the path pi scans
 
-echo "==> 1/3  pi harness"
+echo "==> 1/4  pi harness"
 if command -v pi >/dev/null 2>&1; then
   echo "    pi already installed ($(pi --version 2>/dev/null || echo unknown)); skipping"
 else
@@ -27,7 +27,7 @@ else
   command -v pi >/dev/null 2>&1 || { echo "    ERROR: pi still not on PATH"; exit 1; }
 fi
 
-echo "==> 2/3  packages (canonical list = home/settings.json, auto-synced from live by sync-settings.sh)"
+echo "==> 2/4  packages (canonical list = home/settings.json, auto-synced from live by sync-settings.sh)"
 
 # Deploy canonical pi agent settings.json from this repo as the base; pi install
 # below appends each installed package into it. Live edits to settings.json are
@@ -50,7 +50,7 @@ for pkg in $PKGS; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done
 
-echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
+echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
 for src in "$SCRIPT_DIR/home/skills"/*/; do
@@ -91,6 +91,26 @@ if [ ! -f "$HOME/.pi/agent/AGENTS.md" ] && [ -f "$SCRIPT_DIR/home/AGENTS.md" ]; 
   echo "    AGENTS.md  seeded (add any local-only sections, e.g. VPS access, manually)"
 else
   echo "    AGENTS.md  already present — left untouched (local edits preserved)"
+fi
+
+echo "==> 4/4  launchd auto-sync agent (settings.json live -> repo)"
+# com.pi-elias.sync-settings.plist is a template: bootstrap.sh substitutes the repo
+# path and $HOME (launchd doesn't expand ~). Skipped under curl|bash (no plist).
+if command -v launchctl >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/com.pi-elias.sync-settings.plist" ]; then
+  LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
+  LAUNCH_AGENT="$LAUNCH_AGENT_DIR/com.pi-elias.sync-settings.plist"
+  mkdir -p "$LAUNCH_AGENT_DIR"
+  sed -e "s|/Users/eliasdiab/dev/pi-elias|$SCRIPT_DIR|g" \
+      -e "s|/Users/eliasdiab|$HOME|g" \
+      "$SCRIPT_DIR/com.pi-elias.sync-settings.plist" > "$LAUNCH_AGENT"
+  launchctl unload "$LAUNCH_AGENT" 2>/dev/null || true
+  if launchctl load "$LAUNCH_AGENT"; then
+    echo "    launchd agent installed: watches $HOME/.pi/agent/settings.json"
+  else
+    echo "    WARNING: launchctl load failed — auto-sync disabled (see /tmp/com.pi-elias.sync-settings.err)"
+  fi
+else
+  echo "    launchctl or template plist not available — auto-sync not installed"
 fi
 
 echo "==> verify"
