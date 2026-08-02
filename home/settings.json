@@ -13,8 +13,7 @@
     "npm:pi-lsp",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-ponytail",
-    "npm:pi-terminal-theme",
-    "npm:pi-blackhole"
+    "npm:pi-terminal-theme"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
