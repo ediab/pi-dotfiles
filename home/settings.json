@@ -3,7 +3,7 @@
   "theme": "terminal",
   "defaultProvider": "deepseek",
   "defaultModel": "deepseek-v4-flash",
-  "defaultThinkingLevel": "high",
+  "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-mcp-adapter",
