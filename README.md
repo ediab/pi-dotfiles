@@ -64,6 +64,18 @@ Edit the config files under `home/` in place, then re-apply:
 That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`, and
 `home/settings.json` into `~/.pi/agent/`.
 
+### Keeping the repo in sync
+
+| What | Direction | How |
+|---|---|---|
+| `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
+| `home/skills/`, `home/extensions/` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten |
+| `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
+| `auth.json`, `mcp.json`, `models-store.json`, sessions, caches | never in repo | secrets and runtime state, by design |
+
+Bottom line: your settings reflect into the repo by themselves; the repo is the source of
+truth for skills, extensions, and the base `settings.json` that gets deployed to new machines.
+
 ## Make it yours
 
 This repo is Elias's. If you clone it, review these before you run `bootstrap.sh`:
