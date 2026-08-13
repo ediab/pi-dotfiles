@@ -4,7 +4,7 @@
  * ctx.ui.theme instead of a hardcoded Monokai Pro palette.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { truncateToWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
+import { wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
@@ -45,7 +45,6 @@ const I_CTX = "⊡";
 const I_CLAUDE = "※";
 const I_MCP = "⊕";
 const I_THINK = "✶";
-const I_PONY = "🐴";
 
 // ── Theme helpers ──────────────────────────────────────────────────
 
@@ -289,23 +288,6 @@ async function buildHud(ctx: any): Promise<string> {
 	return [...line1, ...line2].join(` ${s} `);
 }
 
-function ponytailMode(ctx: any): string {
-	try {
-		const entries = ctx?.sessionManager?.getBranch?.() ?? [];
-		for (let i = entries.length - 1; i >= 0; i--) {
-			if (entries[i]?.type === "custom" && entries[i]?.customType === "ponytail-mode") {
-				return entries[i]?.data?.mode ?? "full";
-			}
-		}
-	} catch { /* use the default */ }
-	return "full";
-}
-
-function extensionLine(theme: Theme, ctx: any, width: number): string {
-	const ponytail = `${fg(theme, "dim", I_PONY)} ${fg(theme, "dim", "ponytail")} ${fg(theme, "accent", ponytailMode(ctx))}`;
-	return truncateToWidth(ponytail, Math.max(1, width), fg(theme, "dim", "..."));
-}
-
 // ── Refresh + entry ────────────────────────────────────────────────
 
 function refreshHud(ctx: any) {
@@ -331,7 +313,6 @@ function installFooter(ctx: any) {
 				const safeWidth = Math.max(1, width);
 				return [
 					...wrapTextWithAnsi(hudText, safeWidth),
-					extensionLine(theme, ctx, safeWidth),
 				];
 			},
 		};
