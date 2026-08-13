@@ -17,7 +17,7 @@ PI_SKILLS_DIR="$HOME/.pi/agent/skills"
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
 # Skills deployed below = every dir in $SCRIPT_DIR/home/skills/ (whole-dir copies).
 CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
-CUSTOM_EXTENSION_DIRS=(plan-mode)
+CUSTOM_EXTENSION_DIRS=(plan-mode ponytail-simplicity)
 
 if [ "$SYNC_ONLY" = "1" ]; then
   echo "==> sync-only: skipping 'pi update --all' and the settings.json copy"
