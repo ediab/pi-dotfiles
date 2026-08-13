@@ -1,6 +1,6 @@
 ---
 name: execute-tickets
-description: Execute an explicit, user-approved ticket set with fresh per-ticket worker contexts, parallel Spec and Standards review, bounded fix rounds, and one reviewed commit per ticket — the parent orchestrates; workers never commit. Use after the to-tickets implementation handoff when the user chooses subagent execution.
+description: Execute an explicit, user-approved ticket set with fresh per-ticket worker contexts, parallel Spec and Standards review, bounded fix rounds, and one reviewed commit per ticket — the parent orchestrates; workers never commit. Use when the user approves subagent execution of an explicit ticket set.
 ---
 
 # Execute Tickets
@@ -53,7 +53,7 @@ Launch one `worker` with:
 
 - `context: fresh`;
 - `cwd` = the persistent feature worktree;
-- Matt's `tdd` skill selected;
+- the installed `test-driven-development` skill selected;
 - `acceptance: "checked"`;
 - no managed worktree;
 - no hard turn/tool budget;
@@ -98,23 +98,23 @@ tracked implementation diff, byte hashes for every non-ignored, non-tracker untr
 and `TRACKER_FILES`, and a fresh ignored-file manifest.
 
 Launch two built-in `reviewer` agents in parallel, `context: fresh`, `cwd` = the feature
-worktree. The parent pastes each reviewer's rubric into its prompt, extracted from the
-`code-review` skill — the Standards reviewer gets the smell baseline and
-repo-overrides/judgement-call rules, the Spec reviewer gets the Spec brief. Do not load the
-`code-review` skill into a reviewer: it is parent-orchestration text (its step 4 tells the
-reader to spawn sub-agents), which contradicts the no-subagents instruction below.
+worktree. The parent pastes each reviewer's rubric into its prompt: the Standards reviewer
+gets the smell baseline and repo-overrides/judgement-call rules drawn from the repository's
+standards, the Spec reviewer gets the Spec brief. Do not load a review skill into a
+reviewer: review skills are parent-orchestration text and contradict the no-subagents
+instruction below.
 
 Explicitly instruct both reviewers: inspect files and commands directly; do not
 edit/write/commit; do not invoke subagents. Because the changes are uncommitted, they must
 review `git diff BASE_SHA` plus the full contents of every non-tracker untracked file
-recorded above, ignoring known `TRACKER_FILES` (local). Matt's committed-branch-only
+recorded above, ignoring known `TRACKER_FILES` (local). The committed-branch-only
 `git diff <base>...HEAD` is insufficient here.
 
 - The **Spec** reviewer reports, against the originating ticket and parent spec: missing or
   partial requirements; unrequested behavior/scope creep; apparently implemented
   requirements whose behavior is wrong; exact ticket/spec evidence for every finding.
 - The **Standards** reviewer reads repository standards and applies the pasted rubric
-  (Matt's smell baseline), with documented repo standards overriding heuristics;
+  (the smell baseline), with documented repo standards overriding heuristics;
   distinguishes hard violations from judgment calls; skips tooling-enforced style.
 
 As each reviewer returns, require the entire pre-review snapshot — including exact equality
@@ -195,8 +195,8 @@ integration/PR/keep/discard menu is the expected final user interaction.
 
 ## Autonomy and stop conditions
 
-The mode selection in the handoff was the implementation approval gate; execution then
-proceeds autonomously through the explicit ticket set. Do not pause at routine ticket
+The user's mode choice was the implementation approval gate; execution then proceeds
+autonomously through the explicit ticket set. Do not pause at routine ticket
 boundaries. Pause only for:
 
 - ambiguous or contradictory approved scope;
@@ -213,7 +213,6 @@ in the feature worktree.
 
 ## Phase references
 
-When each phase begins, read the installed skill that governs it: `code-review` (extract
-the Standards/Spec rubrics for reviewer prompts), `receiving-code-review` (adjudication),
-`verification-before-completion` (completion evidence), `finishing-a-development-branch`
-(final integration).
+When each phase begins, read the installed skill that governs it: `receiving-code-review`
+(adjudication), `verification-before-completion` (completion evidence),
+`finishing-a-development-branch` (final integration).

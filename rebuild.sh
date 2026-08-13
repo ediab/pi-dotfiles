@@ -35,7 +35,7 @@ else
     || echo "    FAILED: home/settings.json"
 fi
 
-echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + memo"
+echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
 for src in "$SCRIPT_DIR/home/skills"/*/; do
@@ -67,10 +67,5 @@ for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   cp -R "$src/". "$PI_EXTENSIONS_DIR/$ext/"
   echo "    $ext/  re-synced"
 done
-
-# Root memo: repo is source of truth; live copy must stay byte-identical (spec P6/P7).
-cp "$SCRIPT_DIR/MATT_SUPER.md" "$HOME/.pi/agent/MATT_SUPER.md" \
-  && echo "    MATT_SUPER.md  re-synced" \
-  || echo "    FAILED: MATT_SUPER.md"
 
 echo "==> done."

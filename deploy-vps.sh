@@ -15,9 +15,6 @@ rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 echo "==> 3/4  extensions"
 rsync -az --delete "$REPO_DIR/home/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
 
-echo "==> 3.5/4  memo"
-rsync -az "$REPO_DIR/MATT_SUPER.md" "$VPS_HOST:~/.pi/agent/MATT_SUPER.md"
-
 echo "==> 4/4  reconcile packages"
 # Read the canonical package list from the freshly deployed settings.json on the VPS,
 # then install missing and remove surplus.
