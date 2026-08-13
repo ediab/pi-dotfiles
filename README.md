@@ -168,7 +168,7 @@ touching installed packages or settings.
 - `docs/plans/` — implementation-ready specs (e.g. `2026-08-02-002-feat-ticket-execution-workflow.md`);
   `docs/solutions/tooling-decisions/` — ADR-style records of past tooling choices.
 - `MATT_SUPER.md` — research/decision memo for the ticket execution workflow (deployed to
-  `~/.pi/agent/` alongside the skills); `CONCEPTS.md`, `HANDOFF.md`, `MANUAL_SKILLS.md` —
+  `~/.pi/agent/` alongside the skills); `CONCEPTS.md`, `HANDOFF.md` —
   project notes and archives.
 
 ## How the sync works
