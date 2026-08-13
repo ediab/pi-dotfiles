@@ -4,7 +4,7 @@
 set -euo pipefail
 
 LIVE="$HOME/.pi/agent/settings.json"
-# Repo root = this script's location (works from any clone path, not just ~/dev/pi-elias).
+# Repo root = this script's location (works from any clone path, not just ~/dev/pi-dotfiles).
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 DEST="$REPO/home/settings.json"
 

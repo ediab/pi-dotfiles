@@ -102,7 +102,7 @@ if command -v launchctl >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/com.pi-dotfiles.syn
   mkdir -p "$LAUNCH_AGENT_DIR"
   sed -e "s|/Users/eliasdiab/dev/pi-dotfiles|$SCRIPT_DIR|g" \
       -e "s|/Users/eliasdiab|$HOME|g" \
-      "$SCRIPT_DIR/com.pi-elias.sync-settings.plist" > "$LAUNCH_AGENT"
+      "$SCRIPT_DIR/com.pi-dotfiles.sync-settings.plist" > "$LAUNCH_AGENT"
   launchctl unload "$LAUNCH_AGENT" 2>/dev/null || true
   if launchctl load "$LAUNCH_AGENT"; then
     echo "    launchd agent installed: watches $HOME/.pi/agent/settings.json"
