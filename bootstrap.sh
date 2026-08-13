@@ -6,14 +6,25 @@ set -euo pipefail
 # Skills bundled in this repo under home/skills (whole directories, including subdocs).
 # Add/remove a skill by adding/removing its directory under home/skills/; no script edit needed.
 
-# Custom extensions bundled in this repo under home/extensions (single-file .ts -> ~/.pi/agent/extensions/).
-CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
-# Custom directory extensions bundled in this repo (dir with index.ts -> ~/.pi/agent/extensions/<name>/).
-CUSTOM_EXTENSION_DIRS=(plan-mode ponytail-simplicity)
+# Custom extensions bundled in this repo under home/extensions — auto-discovered like
+# home/skills: every top-level .ts/.js file is a single-file extension, every subdirectory
+# with an index.ts/index.js is a directory extension. Add/remove by file/dir; no script edit.
 
 # Resolve the repo root (works for clone+run and curl|bash via $0).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"   # note: 'agent' singular — the path pi scans
+
+shopt -s nullglob
+CUSTOM_EXTENSIONS=()
+for src in "$SCRIPT_DIR/home/extensions/"*.ts "$SCRIPT_DIR/home/extensions/"*.js; do
+  CUSTOM_EXTENSIONS+=("$(basename "${src%.*}")")
+done
+CUSTOM_EXTENSION_DIRS=()
+for src in "$SCRIPT_DIR/home/extensions/"*/; do
+  [ -f "$src/index.ts" ] || [ -f "$src/index.js" ] || continue
+  CUSTOM_EXTENSION_DIRS+=("$(basename "$src")")
+done
+shopt -u nullglob
 
 echo "==> 1/4  pi harness"
 if command -v pi >/dev/null 2>&1; then
@@ -66,19 +77,11 @@ mkdir -p "$PI_EXTENSIONS_DIR"
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
   src="$SCRIPT_DIR/home/extensions/$ext.ts"
   [ -f "$src" ] || src="$SCRIPT_DIR/home/extensions/$ext.js"
-  if [ ! -f "$src" ]; then
-    echo "  MISSING: $ext (no $src) — clone the repo instead of curl|bash"
-    continue
-  fi
   cp "$src" "$PI_EXTENSIONS_DIR/$(basename "$src")"
   echo "    $ext  installed"
 done
 for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   src="$SCRIPT_DIR/home/extensions/$ext"
-  if [ ! -d "$src" ]; then
-    echo "  MISSING: $ext (no $src/) — clone the repo instead of curl|bash"
-    continue
-  fi
   mkdir -p "$PI_EXTENSIONS_DIR/$ext"
   cp -R "$src/". "$PI_EXTENSIONS_DIR/$ext/"
   echo "    $ext/  installed"
@@ -124,10 +127,18 @@ for src in "$SCRIPT_DIR/home/skills"/*/; do
 done
 shopt -u nullglob
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
-  [ -f "$HOME/.pi/agent/extensions/$ext.ts" ] && echo "    ok: $ext" || echo "    MISSING: $ext"
+  if [ -f "$HOME/.pi/agent/extensions/$ext.ts" ] || [ -f "$HOME/.pi/agent/extensions/$ext.js" ]; then
+    echo "    ok: $ext"
+  else
+    echo "    MISSING: $ext"
+  fi
 done
 for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
-  [ -f "$HOME/.pi/agent/extensions/$ext/index.ts" ] && echo "    ok: $ext/" || echo "    MISSING: $ext"
+  if [ -f "$HOME/.pi/agent/extensions/$ext/index.ts" ] || [ -f "$HOME/.pi/agent/extensions/$ext/index.js" ]; then
+    echo "    ok: $ext/"
+  else
+    echo "    MISSING: $ext"
+  fi
 done
 [ -f "$HOME/.pi/agent/AGENTS.md" ] && echo "    ok: AGENTS.md" || echo "    MISSING: AGENTS.md"
 

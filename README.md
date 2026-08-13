@@ -87,8 +87,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `packages` list directly.
 - **Skills**: add/remove a directory under `home/skills/` — no script edit needed, every
   dir is deployed automatically.
-- **Extensions**: add/remove a name in `CUSTOM_EXTENSIONS` or `CUSTOM_EXTENSION_DIRS` in
-  `bootstrap.sh`, and put the file under `home/extensions/`.
+- **Extensions**: add/remove a file (`.ts`/`.js`) or a directory (`index.ts`/`index.js`)
+  under `home/extensions/` — auto-discovered, no script edit needed.
 
 **Heads-up:**
 

@@ -16,8 +16,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PI_SKILLS_DIR="$HOME/.pi/agent/skills"
 PI_EXTENSIONS_DIR="$HOME/.pi/agent/extensions"
 # Skills deployed below = every dir in $SCRIPT_DIR/home/skills/ (whole-dir copies).
-CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
-CUSTOM_EXTENSION_DIRS=(plan-mode ponytail-simplicity)
+# Extensions are auto-discovered from home/extensions — every top-level .ts/.js file is a
+# single-file extension, every subdirectory with an index.ts/index.js is a directory
+# extension. Add/remove by file/dir; no script edit needed.
+shopt -s nullglob
+CUSTOM_EXTENSIONS=()
+for src in "$SCRIPT_DIR/home/extensions/"*.ts "$SCRIPT_DIR/home/extensions/"*.js; do
+  CUSTOM_EXTENSIONS+=("$(basename "${src%.*}")")
+done
+CUSTOM_EXTENSION_DIRS=()
+for src in "$SCRIPT_DIR/home/extensions/"*/; do
+  [ -f "$src/index.ts" ] || [ -f "$src/index.js" ] || continue
+  CUSTOM_EXTENSION_DIRS+=("$(basename "$src")")
+done
+shopt -u nullglob
 
 if [ "$SYNC_ONLY" = "1" ]; then
   echo "==> sync-only: skipping 'pi update --all' and the settings.json copy"
@@ -50,19 +62,11 @@ mkdir -p "$PI_EXTENSIONS_DIR"
 for ext in "${CUSTOM_EXTENSIONS[@]}"; do
   src="$SCRIPT_DIR/home/extensions/$ext.ts"
   [ -f "$src" ] || src="$SCRIPT_DIR/home/extensions/$ext.js"
-  if [ ! -f "$src" ]; then
-    echo "  MISSING: $ext (no $src) — run from a clone of the repo"
-    continue
-  fi
   cp "$src" "$PI_EXTENSIONS_DIR/$(basename "$src")"
   echo "    $ext  re-synced"
 done
 for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   src="$SCRIPT_DIR/home/extensions/$ext"
-  if [ ! -d "$src" ]; then
-    echo "  MISSING: $ext (no $src/) — run from a clone of the repo"
-    continue
-  fi
   mkdir -p "$PI_EXTENSIONS_DIR/$ext"
   cp -R "$src/". "$PI_EXTENSIONS_DIR/$ext/"
   echo "    $ext/  re-synced"
