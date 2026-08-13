@@ -158,3 +158,16 @@ vs `grilling` on "grill me", was accepted deliberately as an alias).
   review + `finishing-a-development-branch`. Curated set now 26 (SP 6 + Matt 19 + local
   1). Re-deploy with `~/dev/pi-elias/rebuild.sh --sync-only` (skills + memo only, no
   package/settings changes).
+
+- **2026-08-13 — superpowers package skill collisions.** The `git:github.com/obra/superpowers`
+  package stays installed (it provides the 9 non-colliding SP skills: `brainstorming`,
+  `systematic-debugging`, `using-superpowers`, `test-driven-development`, `writing-plans`,
+  `executing-plans`, `subagent-driven-development`, `requesting-code-review`,
+  `writing-skills`), but its copies of the 5 curated skill names (`dispatching-parallel-agents`,
+  `finishing-a-development-branch`, `receiving-code-review`, `using-git-worktrees`,
+  `verification-before-completion`) collided with the vendored user-level versions and were
+  skipped with warnings. Resolved with a package filter in `home/settings.json` — the
+  package entry is now the object form with `"skills": ["!<name>", …]` exclusions, so pi
+  never loads those 5 from the package (user-level copies win silently; no startup
+  warnings). Survives `pi update`/`git pull` (unlike deleting the dirs from the clone).
+  If upstream adds a new skill name that collides with a curated one, add its `!` pattern.
