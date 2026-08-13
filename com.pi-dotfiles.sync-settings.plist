@@ -4,18 +4,18 @@
 <!-- TEMPLATE: bootstrap.sh substitutes the repo path and $HOME before installing this into ~/Library/LaunchAgents/ (launchd does not expand ~). -->
 <dict>
 	<key>Label</key>
-	<string>com.pi-elias.sync-settings</string>
+	<string>com.pi-dotfiles.sync-settings</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Users/eliasdiab/dev/pi-elias/sync-settings.sh</string>
+		<string>/Users/eliasdiab/dev/pi-dotfiles/sync-settings.sh</string>
 	</array>
 	<key>WatchPaths</key>
 	<array>
 		<string>/Users/eliasdiab/.pi/agent/settings.json</string>
 	</array>
 	<key>StandardOutPath</key>
-	<string>/tmp/com.pi-elias.sync-settings.out</string>
+	<string>/tmp/com.pi-dotfiles.sync-settings.out</string>
 	<key>StandardErrorPath</key>
-	<string>/tmp/com.pi-elias.sync-settings.err</string>
+	<string>/tmp/com.pi-dotfiles.sync-settings.err</string>
 </dict>
 </plist>

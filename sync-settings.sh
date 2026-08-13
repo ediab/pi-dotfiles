@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto-sync: live ~/.pi/agent/settings.json → pi-elias repo.
+# Auto-sync: live ~/.pi/agent/settings.json → pi-dotfiles repo.
 # Triggered by launchd WatchPaths when pi mutates settings.json.
 set -euo pipefail
 

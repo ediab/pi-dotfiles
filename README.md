@@ -1,4 +1,4 @@
-# pi-elias
+# pi-dotfiles
 
 Elias's personal [pi](https://github.com/earendil-works/pi) (coding-agent harness) setup.
 One repo, one command, and a fresh machine ends up with the same pi config every time.
@@ -17,8 +17,8 @@ Running the bootstrap installs:
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
 - **Custom extensions** — every file under `home/extensions/` (`clear`, `commit-push-pr`,
-  `exit`, `statusline`, `terminal-status-title`) plus the `plan-mode/` directory extension,
-  copied to `~/.pi/agent/extensions/`.
+  `exit`, `statusline`, `terminal-status-title`) plus the `plan-mode/` and
+  `ponytail-simplicity/` directory extensions, copied to `~/.pi/agent/extensions/`.
 - **Agent config** — `home/settings.json` deployed as the canonical pi agent settings, and
   `home/AGENTS.md` seeded to `~/.pi/agent/AGENTS.md` (only when absent, so local-only
   sections like VPS access survive).
@@ -35,8 +35,8 @@ Running the bootstrap installs:
 Clone and run (recommended — fully self-contained):
 
 ```sh
-git clone https://github.com/ediab/pi-elias.git
-cd pi-elias
+git clone https://github.com/ediab/pi-dotfiles.git
+cd pi-dotfiles
 ./bootstrap.sh
 ```
 
@@ -44,7 +44,7 @@ Or run directly via curl (note: the bundled skills and extensions won't be prese
 a clone — `bootstrap.sh` will warn and skip them; clone for the full set):
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/ediab/pi-elias/main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ediab/pi-dotfiles/main/bootstrap.sh | bash
 ```
 
 `bootstrap.sh` does four things, in order:
@@ -52,7 +52,7 @@ curl -fsSL https://raw.githubusercontent.com/ediab/pi-elias/main/bootstrap.sh | 
 1. Installs the pi harness if it isn't already installed.
 2. Deploys `home/settings.json` and installs every package in its `packages` list.
 3. Copies `home/skills/`, `home/extensions/`, and seeds `home/AGENTS.md`.
-4. Installs the launchd auto-sync agent (`com.pi-elias.sync-settings.plist`, templated
+4. Installs the launchd auto-sync agent (`com.pi-dotfiles.sync-settings.plist`, templated
    with your repo path) so `settings.json` changes flow back into the repo automatically.
 
 ## Daily use
@@ -115,9 +115,10 @@ workers never commit; reviewers never edit.
 - **Completion** is a whole-feature Spec + Standards review from the original base, the full
   configured verification suite, and one `finishing-a-development-branch` call.
 
-Design record: `docs/plans/2026-08-02-002-feat-ticket-execution-workflow.md` (implemented
-2026-08-02; the spec also added `rebuild.sh --sync-only`, which deploys skills and
-extensions without touching installed packages or settings).
+Design record: `docs/plans/2026-08-02-002-feat-ticket-execution-workflow.md` — kept in
+git history, since `docs/` is gitignored locally (implemented 2026-08-02; the spec also added
+`rebuild.sh --sync-only`, which deploys skills and extensions without touching installed
+packages or settings).
 
 ## Repo tour
 
@@ -129,13 +130,12 @@ extensions without touching installed packages or settings).
 - `rebuild.sh` — re-apply the config after any change. Run this every time.
 - `sync-settings.sh` — auto-syncs the live `~/.pi/agent/settings.json` back into
   `home/settings.json` when pi rewrites it. Triggered by the launchd agent
-  `com.pi-elias.sync-settings.plist` (a template in this repo, installed and path-substituted
+  `com.pi-dotfiles.sync-settings.plist` (a template in this repo, installed and path-substituted
   by `bootstrap.sh` step 4; watch path: `~/.pi/agent/settings.json`).
 - `deploy-vps.sh` — pushes `home/skills/`, `home/extensions/`, and the live settings to the
   VPS (`ssh vps`) and reconciles installed packages against the canonical list.
-- `docs/plans/` — implementation-ready specs (e.g. `2026-08-02-002-feat-ticket-execution-workflow.md`);
-  `docs/solutions/tooling-decisions/` — ADR-style records of past tooling choices.
-- `CONCEPTS.md`, `HANDOFF.md` — project notes and archives.
+- `docs/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
+  **local-only** and gitignored (not canonical config; find them in git history).
 
 ## How the sync works
 

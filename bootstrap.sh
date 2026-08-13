@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pi-elias — install the pi coding-agent harness + Elias's packages + skills.
+# pi-dotfiles — install the pi coding-agent harness + Elias's packages + skills.
 # Does NOT install MCPs, auth keys, or provider/model settings.
 set -euo pipefail
 
@@ -9,7 +9,7 @@ set -euo pipefail
 # Custom extensions bundled in this repo under home/extensions (single-file .ts -> ~/.pi/agent/extensions/).
 CUSTOM_EXTENSIONS=(clear commit-push-pr exit statusline terminal-status-title)
 # Custom directory extensions bundled in this repo (dir with index.ts -> ~/.pi/agent/extensions/<name>/).
-CUSTOM_EXTENSION_DIRS=(plan-mode)
+CUSTOM_EXTENSION_DIRS=(plan-mode ponytail-simplicity)
 
 # Resolve the repo root (works for clone+run and curl|bash via $0).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
@@ -94,20 +94,20 @@ else
 fi
 
 echo "==> 4/4  launchd auto-sync agent (settings.json live -> repo)"
-# com.pi-elias.sync-settings.plist is a template: bootstrap.sh substitutes the repo
+# com.pi-dotfiles.sync-settings.plist is a template: bootstrap.sh substitutes the repo
 # path and $HOME (launchd doesn't expand ~). Skipped under curl|bash (no plist).
-if command -v launchctl >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/com.pi-elias.sync-settings.plist" ]; then
+if command -v launchctl >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/com.pi-dotfiles.sync-settings.plist" ]; then
   LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
-  LAUNCH_AGENT="$LAUNCH_AGENT_DIR/com.pi-elias.sync-settings.plist"
+  LAUNCH_AGENT="$LAUNCH_AGENT_DIR/com.pi-dotfiles.sync-settings.plist"
   mkdir -p "$LAUNCH_AGENT_DIR"
-  sed -e "s|/Users/eliasdiab/dev/pi-elias|$SCRIPT_DIR|g" \
+  sed -e "s|/Users/eliasdiab/dev/pi-dotfiles|$SCRIPT_DIR|g" \
       -e "s|/Users/eliasdiab|$HOME|g" \
       "$SCRIPT_DIR/com.pi-elias.sync-settings.plist" > "$LAUNCH_AGENT"
   launchctl unload "$LAUNCH_AGENT" 2>/dev/null || true
   if launchctl load "$LAUNCH_AGENT"; then
     echo "    launchd agent installed: watches $HOME/.pi/agent/settings.json"
   else
-    echo "    WARNING: launchctl load failed — auto-sync disabled (see /tmp/com.pi-elias.sync-settings.err)"
+    echo "    WARNING: launchctl load failed — auto-sync disabled (see /tmp/com.pi-dotfiles.sync-settings.err)"
   fi
 else
   echo "    launchctl or template plist not available — auto-sync not installed"
