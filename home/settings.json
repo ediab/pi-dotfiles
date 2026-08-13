@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.84.1",
   "theme": "terminal",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
+  "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
@@ -15,7 +15,16 @@
     "npm:pi-terminal-theme",
     "npm:pi-intercom",
     "npm:pi-btw",
-    "git:github.com/obra/superpowers",
+    {
+      "source": "git:github.com/obra/superpowers",
+      "skills": [
+        "!dispatching-parallel-agents",
+        "!finishing-a-development-branch",
+        "!receiving-code-review",
+        "!using-git-worktrees",
+        "!verification-before-completion"
+      ]
+    },
     "https://github.com/dodo-reach/pi-clarify"
   ],
   "enableInstallTelemetry": true,
