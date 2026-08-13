@@ -1,7 +1,7 @@
 {
   "lastChangelogVersion": "0.84.1",
   "theme": "terminal",
-  "defaultProvider": "opencode-go",
+  "defaultProvider": "deepseek",
   "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "max",
   "packages": [
