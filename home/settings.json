@@ -15,16 +15,7 @@
     "npm:pi-terminal-theme",
     "npm:pi-intercom",
     "npm:pi-btw",
-    {
-      "source": "git:github.com/obra/superpowers",
-      "skills": [
-        "!dispatching-parallel-agents",
-        "!finishing-a-development-branch",
-        "!receiving-code-review",
-        "!using-git-worktrees",
-        "!verification-before-completion"
-      ]
-    },
+    "git:github.com/obra/superpowers",
     "https://github.com/dodo-reach/pi-clarify"
   ],
   "enableInstallTelemetry": true,
