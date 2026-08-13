@@ -14,7 +14,8 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-terminal-theme",
     "npm:pi-intercom",
-    "npm:pi-btw"
+    "npm:pi-btw",
+    "git:github.com/obra/superpowers"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
