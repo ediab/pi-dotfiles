@@ -17,8 +17,8 @@ Running the bootstrap installs:
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
 - **Custom extensions** — every file under `home/extensions/` (`clear`, `commit-push-pr`,
-  `exit`, `statusline`, `terminal-status-title`) plus the `plan-mode/` and
-  `ponytail-simplicity/` directory extensions, copied to `~/.pi/agent/extensions/`.
+  `exit`, `statusline`, `terminal-status-title`) plus the `ponytail-simplicity/`
+  directory extension, copied to `~/.pi/agent/extensions/`.
 - **Agent config** — `home/settings.json` deployed as the canonical pi agent settings, and
   `home/AGENTS.md` seeded to `~/.pi/agent/AGENTS.md` (only when absent, so local-only
   sections like VPS access survive).
