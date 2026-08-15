@@ -6,11 +6,13 @@ VPS_HOST="${1:-vps}"
 PI_DIR="$HOME/.pi/agent"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "==> 1/4  settings.json"
+echo "==> 1/4  settings.json + auth.json"
 # Snapshot the old settings on the VPS first — step 4 needs it to find surplus packages
 # (pi list only reflects the NEW settings by the time it runs).
 ssh "$VPS_HOST" 'cp ~/.pi/agent/settings.json ~/.pi/agent/settings.json.pre-deploy 2>/dev/null || true'
 rsync -az "$PI_DIR/settings.json" "$VPS_HOST:~/.pi/agent/settings.json"
+rsync -az "$PI_DIR/auth.json" "$VPS_HOST:~/.pi/agent/auth.json"
+ssh "$VPS_HOST" 'chmod 600 ~/.pi/agent/auth.json'
 
 echo "==> 2/4  skills"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
