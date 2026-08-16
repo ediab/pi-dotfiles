@@ -61,6 +61,22 @@ for pkg in $PKGS; do
   pi install "$pkg" || echo "  FAILED: $pkg  (rerun: pi install $pkg)"
 done
 
+# apt/brew packages used by the harness/workflows (gh: GitHub CLI for repo tasks).
+APT_PACKAGES=(gh)
+for pkg in "${APT_PACKAGES[@]}"; do
+  if ! command -v "$pkg" >/dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
+      sudo apt-get install -y "$pkg" || echo "  FAILED: $pkg (rerun: sudo apt-get install -y $pkg)"
+    elif command -v brew >/dev/null 2>&1; then
+      brew install "$pkg" || echo "  FAILED: $pkg (rerun: brew install $pkg)"
+    else
+      echo "  SKIPPED: $pkg (no apt-get/brew on this host)"
+    fi
+  else
+    echo "    apt: $pkg already installed"
+  fi
+done
+
 echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
