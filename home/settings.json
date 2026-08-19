@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.84.2",
   "theme": "terminal",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-pro",
+  "defaultModel": "deepseek-v4-flash",
   "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
