@@ -2,8 +2,8 @@
   "lastChangelogVersion": "0.84.2",
   "theme": "terminal",
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-flash",
-  "defaultThinkingLevel": "max",
+  "defaultModel": "muse-spark-1.2-contributor",
+  "defaultThinkingLevel": "xhigh",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-mcp-adapter",
