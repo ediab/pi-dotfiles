@@ -1,6 +1,5 @@
-# pi runtime dirs (local subagent/artifact state — not canonical config)
+# pi runtime dirs (local state — not canonical config)
 .pi/
-.pi-subagents/
 
 # Historical/archival docs (local planning records and notes — not canonical config)
 docs/plans/

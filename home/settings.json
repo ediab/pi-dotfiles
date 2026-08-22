@@ -25,49 +25,5 @@
   "header": true,
   "header-info": true,
   "quietStartup": true,
-  "hideThinkingBlock": true,
-  "subagents": {
-    "agentOverrides": {
-      "scout": {
-        "model": "openai-codex/gpt-5.6-luna",
-        "thinking": "medium"
-      },
-      "delegate": {
-        "model": "deepseek/deepseek-v4-flash",
-        "thinking": "high"
-      },
-      "context-builder": {
-        "model": "deepseek/deepseek-v4-flash",
-        "thinking": "xhigh"
-      },
-      "researcher": {
-        "model": "deepseek/deepseek-v4-flash",
-        "thinking": "high"
-      },
-      "planner": {
-        "model": "openai-codex/gpt-5.6-sol",
-        "thinking": "medium"
-      },
-      "oracle": {
-        "model": "openai-codex/gpt-5.6-sol",
-        "thinking": "high"
-      },
-      "reviewer": {
-        "model": "openai-codex/gpt-5.6-terra",
-        "thinking": "high"
-      },
-      "worker": {
-        "model": "openai-codex/gpt-5.6-luna",
-        "thinking": "xhigh"
-      }
-    },
-    "watchdog": {
-      "enabled": true,
-      "main": {
-        "enabled": true,
-        "model": "openai-codex/gpt-5.6-terra",
-        "thinking": "xhigh"
-      }
-    }
-  }
+  "hideThinkingBlock": true
 }

@@ -60,16 +60,9 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Be Brief
-
-**Default to terse. Code first, prose second.**
-
-- Drop filler, hedging, and pleasantries. Fragments are fine.
-- State what changed and why. Cut anything else.
-- Explanation you were asked for (a report, walkthrough, per-phase notes) is not debt — give it in full, in plain English.
-- Code blocks, errors, and commands stay exact.
-
 ---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
 ## Tech Documentation Lookups
 
@@ -82,16 +75,11 @@ Flow: `mcp({ tool: "context7_resolve-library-id", args: '{"libraryName": "react"
 Slash commands added via extensions in `~/dev/pi-dotfiles/home/extensions/` (synced to `~/.pi/agent/extensions/` by `bootstrap.sh`/`rebuild.sh`):
 
 - `/clear` — clear the conversation, start a fresh session (alias for `/new`)
-- `/commit-push-pr` — commit changes, push, and open a PR
 - `/exit` — quit pi (alias for `/quit`)
 
 ## pi-dotfiles sync
 
-When you make changes to the pi harness setup (custom extensions, skills, installer), update `~/dev/pi-dotfiles` so they're captured for reinstall on other machines. Run `~/dev/pi-dotfiles/rebuild.sh` to re-sync bundled skills, extensions, and settings.json to `~/.pi/agent/`.
-
-**Keep pi-dotfiles in sync with the live harness:** whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-dotfiles` (`home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically. Packages need no manual mirroring — `sync-settings.sh` records `pi install`/`pi uninstall` into `home/settings.json` automatically.
-
----
+Keep pi-dotfiles in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-dotfiles` (`home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically. Packages need no manual mirroring — `sync-settings.sh` records `pi install`/`pi uninstall` into `home/settings.json` automatically.
 
 ## Dotfiles & configs
 
@@ -106,25 +94,12 @@ Symlinked (edit in `~/dev/configs/` directly):
 
 Pi agent files — `settings.json`, `extensions/no-footer.ts`, `extensions/statusline.ts` — are **not** in configs. They live in `~/dev/pi-dotfiles/home/` and are deployed to `~/.pi/agent/` as copies by `bootstrap.sh`/`rebuild.sh`. Edit them in `~/dev/pi-dotfiles/home/`, then run `~/dev/pi-dotfiles/rebuild.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
 
-
-
 Also: `vscode/extensions.txt` — list of installed VS Code extensions, regenerated with `code --list-extensions`.
 
-## Documented Solutions
+## VPS access
 
-`docs/solutions/`, `docs/plans/`, `CONCEPTS.md` — archival notes on past problems and tooling decisions.
-**Gitignored and local-only** (not deployed to other machines; find them in git history of this repo).
-
----
-
-<!-- BEGIN SUPERPOWERS PI TOOL MAP -->
-## Superpowers (Pi compatibility)
-
-Pi extensions used by superpowers skills (brainstorming, systematic-debugging, writing-plans, etc.) and ce-compound / ce-compound-refresh / ce-setup / ce-ideate:
-- Required: `pi-subagents` (by nicobailon) provides the `subagent` tool for parallel-agent and chain workflows.
-- Recommended: `pi-ask-user` (by edlsh) provides the `ask_user` tool; skills fall back to numbered options in chat when it is missing.
-
-Install with:
-  pi install npm:pi-subagents
-  pi install npm:pi-ask-user
-<!-- END SUPERPOWERS PI TOOL MAP -->
+To access this VPS use `ssh vps` (alias defined in `~/.ssh/config`).
+- Host: `77.42.90.4`
+- User: `diab`
+- IdentityFile: `~/.ssh/id_rsa_nroot`
+- ControlMaster multiplexing enabled; LocalForward 18789, 18792, 19999.
