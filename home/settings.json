@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.84.2",
   "theme": "terminal",
   "defaultProvider": "opencode-go",
-  "defaultModel": "glm-5.3",
+  "defaultModel": "ox-alpha-free",
   "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
