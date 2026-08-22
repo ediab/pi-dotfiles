@@ -70,13 +70,6 @@ Use the `context7` MCP server for library/API documentation — it returns curre
 
 Flow: `mcp({ tool: "context7_resolve-library-id", args: '{"libraryName": "react"}' })` to get a library ID, then `mcp({ tool: "context7_query-docs", args: '{"libraryId": ".../react", "topic": "hooks"}' })` for up-to-date docs. Prefer this for exact API signatures, current options, and version-pinned behavior.
 
-## Custom pi commands
-
-Slash commands added via extensions in `~/dev/pi-dotfiles/home/extensions/` (synced to `~/.pi/agent/extensions/` by `bootstrap.sh`/`rebuild.sh`):
-
-- `/clear` — clear the conversation, start a fresh session (alias for `/new`)
-- `/exit` — quit pi (alias for `/quit`)
-
 ## pi-dotfiles sync
 
 Keep pi-dotfiles in sync with the live harness: whenever you install/remove a package, edit `~/.pi/agent/settings.json`, or add/edit a skill or extension, mirror that change in `~/dev/pi-dotfiles` (`home/settings.json`, `home/skills/`, `home/extensions/`) so other machines reinstall identically. Packages need no manual mirroring — `sync-settings.sh` records `pi install`/`pi uninstall` into `home/settings.json` automatically.
