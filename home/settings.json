@@ -15,7 +15,8 @@
     "npm:pi-intercom",
     "npm:pi-btw",
     "https://github.com/dodo-reach/pi-clarify",
-    "npm:@dietrichgebert/ponytail"
+    "npm:@dietrichgebert/ponytail",
+    "git:github.com/DietrichGebert/ponytail"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
