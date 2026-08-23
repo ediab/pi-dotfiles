@@ -28,6 +28,9 @@ Running the bootstrap installs:
 - Auth / API keys (`~/.pi/agent/auth.json`)
 - Provider / model / theme settings (configure those in `~/.pi/agent/settings.json` after
   bootstrap, or edit `home/settings.json` and rebuild)
+- Runtime-managed integrations — e.g. `extensions/herdr-agent-state.ts` is installed and
+  overwritten by the Herdr app itself; on a fresh machine, install the Herdr integration
+  separately (the `herdr` skill alone is not enough)
 
 ## Fresh-machine setup
 
