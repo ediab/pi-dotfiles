@@ -1,184 +1,137 @@
-# Work PC Rollout — Personal Pi Workflow
+# Personal Pi Workflow — What, Why, Where
 
-**This file is written for an AI agent session on Elias's work machine.** It explains
-why this workflow exists, what was built on the personal machine, and — if you are an
-agent reading this on the work PC — exactly what to do: install the portable parts,
-validate them against the live work projects, adapt where needed, and report.
-
-Human-readable context first (sections 1–3), then your instructions (sections 4–6).
+This document records a workflow redesign done on Elias's personal machine. It is
+written so an agent on another machine can understand the reasoning and **selectively
+adopt whichever parts apply**. It does not prescribe steps; each component below lists
+what it is, which failure mode motivated it, and where it lives, so you can judge
+relevance against local reality.
 
 ---
 
-## 1. Problem
+## Problem
 
-Elias does mostly solo Python data engineering, quantitative research, and ML:
-load datasets from Snowflake (often alternative-data providers), reconcile sources,
-transform/join/aggregate, train or score models, validate, emit operational outputs
-(Slack alerts), and maintain these pipelines as sources change.
+Elias's work profile: solo Python data engineering, quantitative research, ML
+pipelines. Load datasets from Snowflake (often alternative-data providers),
+reconcile sources, transform/join/aggregate, train or score models, validate,
+emit operational outputs (Slack alerts), maintain pipelines as sources change.
 
-The hard failures are not conventional app-dev bugs. They are:
+The failures that actually hurt are not conventional app-dev bugs:
 
 - incorrect joins / silent grain changes (fan-out, row loss)
 - duplicates, missing observations, stale/incomplete source data
 - timestamp, timezone, and as-of-date mistakes
 - look-ahead bias, feature leakage, train/test contamination
-- preprocessing that drifts between training and inference
-- misleading model evaluation (good average over bad slices)
-- idempotency breaks and duplicate external side effects (double alerts)
+- preprocessing drifting between training and inference
+- misleading evaluation (good average over bad slices)
+- idempotency breaks, duplicate external side effects (double alerts)
 - code that runs green and is analytically wrong
 
-Two meta-failures dominated tooling attempts: **silently-wrong analysis** caught by
-luck ("sometimes never"), and **process overhead** — heavyweight frameworks whose
-plans/review loops cost more than they catch.
+Two meta-failures dominated tooling attempts: errors caught by luck ("sometimes
+never"), and heavyweight frameworks whose planning/review ceremony cost more than
+it caught.
 
-## 2. Diagnosis
+## Diagnosis
 
-Frameworks (Superpowers-style brainstorm→spec→subagent-relay pipelines, formal SDD)
-add structure *above* the code while doing almost nothing *below* it. But no planning
-ceremony catches a wrong join — only executable checks do. Meanwhile the authoring
-context is structurally blind to its own mistakes (self-review bias), so verification
-needs fresh context, not more instructions.
+Process frameworks (brainstorm→spec→subagent-relay pipelines, formal SDD) add
+structure **above** the code while doing nothing **below** it. No planning ceremony
+catches a wrong join — only executable checks do. And the context that wrote code
+is structurally blind to its own mistakes (measured self-review bias), so review
+needs genuinely fresh context, not stronger instructions to the same session.
 
-Conclusion implemented on the personal machine — the **minimum effective process**:
+Design principle adopted:
 
-> Less ceremony above the code, more teeth below it. Alignment before building,
-> named runnable checks before transforms, fresh-context review before deploy,
+> Less ceremony above the code, more teeth below it. Alignment before building;
+> named runnable checks before transforms; fresh-context review before deploy;
 > everything else tiered by stakes and optional.
 
-## 3. Solution inventory (what lives in this repo)
+Evidence behind the choices: subagent implement/review relays showed 10–15× token
+overhead without quality gains on simple tasks; spec-driven workflows were called
+"the illusion of work" by their own communities; fresh-context review is the single
+best-supported agentic practice in the literature.
 
-All paths below are relative to this repo. Skills deploy by copying the directory
-into `~/.pi/agent/skills/`. Nothing requires npm or network beyond the clone.
+## What was built, and why
 
 ### Skills
 
-| Skill | Type | Purpose |
+Each skill is one directory: `SKILL.md` (+ optional supporting files). "Auto" means
+the agent loads it when a task matches; slash means Elias invokes it.
+
+| Skill | Invoked | Why it exists (failure mode addressed) |
 |---|---|---|
-| `home/skills/data-task/` | auto-invoked | Loads on any data/pipeline/ML task: 4 standing rules, bug checklist walked at plan AND review time, definition-of-done |
-| `home/skills/plan/` | `/plan` | Soft-lock read-only planning → `docs/plans/YYYY-MM-DD-<topic>.md`; includes **Data Contract** section (grain, source quirks, as-of semantics, join cardinality, leakage rules); Verification = named runnable checks agreed BEFORE implementation |
-| `home/skills/review/` | `/review` | Fresh-context review: writes intent + diff + checklist to a temp brief, spawns a headless `pi -p --no-session` instance that shares ZERO context with the builder; mandatory before anything feeds scheduled jobs/models/alerts |
-| `home/skills/grilling/` + `grill-me`, `grill-with-docs` | mixed | Relentless interview resolving every decision branch; `grill-with-docs` also builds `CONTEXT.md` glossary + ADRs |
-| `home/skills/domain-modeling/` | auto-invoked | The glossary/ADR discipline (required by grill-with-docs) |
-| `home/skills/diagnosing-bugs/` | auto-invoked | Red signal → minimise → hypothesise → instrument → fix loop |
-| `home/skills/research/` | auto-invoked | Background investigation against primary sources, cited output file |
-| `home/skills/handoff/` | `/handoff` | Compacts a conversation into a handoff doc for a fresh session |
+| `data-task` | auto | THE core piece. Loads on any data/pipeline/ML task; carries 4 standing rules, a bug checklist walked at both plan-time and review-time, and the definition-of-done. Directly attacks "runs green, analytically wrong". |
+| `plan` (`/plan`) | slash | Soft-lock read-only planning → one plan file. Its plan template forces a **Data Contract** section (grain, source quirks, as-of semantics, join cardinality, leakage rules) and requires named runnable checks agreed BEFORE implementation. Attacks misalignment and "checks as afterthought". |
+| `review` (`/review`) | slash | Fresh-context review: intent + diff + checklist go into a temp brief; a headless `pi -p --no-session` instance reviews it with ZERO shared context, hunting grain/fan-out/timestamps/leakage/parity/double-send paths. Attacks self-review bias. Mandatory before anything feeds scheduled jobs/models/alerts. |
+| `grilling`, `grill-me`, `grill-with-docs` | auto / `/grill-me`, `/grill-with-docs` | Relentless interview resolving every decision branch before building. `grill-with-docs` additionally builds a `CONTEXT.md` glossary + ADRs. Attacks misalignment ("built the wrong thing") and vocabulary drift across sessions. |
+| `domain-modeling` | auto | Glossary/ADR discipline. Required — `grill-with-docs` is just a stub pointing here. |
+| `diagnosing-bugs` | auto | Disciplined loop: get a red signal FIRST, then minimise → hypothesise → instrument → fix. Attacks hypothesis-jumping during debugging. |
+| `research` | auto | Background investigation against primary sources producing a cited findings file. For provider/source quirk investigations. |
+| `handoff` (`/handoff`) | slash | Compacts a conversation into a handoff doc so a fresh session can continue. Context hygiene. |
+| `bro`, `wait-what`, `show-me` | slash | Communication repair / visualization. Convenience, not reliability. |
 
-Deliberately NOT used: orchestration/subagent packages, ticket-triage state machines,
-formal spec-driven development. Documented reasons: per-task implementer/reviewer
-relays showed 10–15× token overhead with no quality gain on simple tasks; SDD's own
-communities call much of it "the illusion of work". Fresh context is obtained with a
-headless call, not an orchestration layer.
+Deliberately NOT adopted, and why: orchestration/subagent packages (per-task
+implementer/reviewer relays cost 10–15× tokens on simple tasks); ticket-triage state
+machines (team product cadence, not solo pipelines); formal spec-driven development
+(illusion-of-work criticism; the real "spec" is a data contract inside the plan).
 
-### Verification kit (`home/skills/data-task/templates/`)
+### Verification kit — `data-task/templates/`
 
-Copy per project into `tests/`. Each guard maps to a real failure mode:
+Three Python files copied per project into `tests/`. Every function maps to a
+specific failure mode:
 
 | File | Guards against |
 |---|---|
-| `datachecks.py` | grain violations (`expect_unique`), join fan-out / row loss (`expect_same_grain`, `expect_count_within`), nulls, look-ahead (`expect_no_future_dates`), stale sources (`expect_freshness`), source disagreement (`reconcile`) |
-| `eval_harness.py` | random splits on temporal data (`time_split`, `expanding_windows`), models that lose to naive baselines (`beat_baseline` — ties lose), misleading averages (`slice_report`) |
-| `side_effects.py` | duplicate alerts on retry/rerun (`Emitter`: dedup key recorded BEFORE send, crash-safe), accidental sends (dry-run default; live needs `ALERTS_LIVE=1`) |
+| `datachecks.py` | grain violations (`expect_unique`), join fan-out via grain snapshot-before/assert-after (`expect_same_grain`), silent row loss vs baseline (`expect_count_within`), nulls (`expect_no_nulls`), look-ahead (`expect_no_future_dates`), stale sources (`expect_freshness`), source disagreement made explicit (`reconcile`) |
+| `eval_harness.py` | random splits on temporal data (`time_split`, `expanding_windows`), models no better than naive (`beat_baseline` — ties lose), misleading averages (`slice_report`) |
+| `side_effects.py` | duplicate alerts on retry/rerun (`Emitter` dedup key recorded BEFORE send, crash-safe, persists across restarts), accidental sends (dry-run default; live requires `ALERTS_LIVE=1`) |
 
-### Standing rules (always-on, from `data-task`)
+### The workflow that ties it together
 
-1. State dataset grain after every load; can't state it → stop.
-2. LIMIT/sample exploratory warehouse queries.
-3. Acceptance checks written before transforms.
-4. Side effects dry-run by default.
+Standing rules (via `data-task`, always): state grain after every load · LIMIT
+exploratory warehouse queries · acceptance checks written before transforms ·
+side effects dry-run by default.
 
-### Tiers
+Tiers:
 
-- **Tier 0 (small change):** just work; standing rules apply; no artifacts.
-- **Tier 1 (ordinary pipeline/model work):** `/grill-me` if fuzzy → `/plan`
+- **Tier 0** small change: just work; standing rules only.
+- **Tier 1** ordinary pipeline/model work: `/grill-me` if fuzzy → `/plan`
   (Data Contract + named checks) → implement checks-first → acceptance suite green →
   `/review` if diff feeds live jobs → commit.
-- **Tier 2 (large build):** Tier 1 + stage-gated execution, historical replay
-  validation, cutover checklist (dry-run verified · dedup key tested · rerun
-  idempotent · freshness alarm armed), promote plan → durable spec once live.
+- **Tier 2** large build: Tier 1 + stage gates, historical replay validation,
+  cutover checklist (dry-run verified · dedup key tested · rerun idempotent ·
+  freshness alarm armed), promote plan → durable spec once live.
 
-**Definition of done:** acceptance green · fresh-context review passed for
-live-affecting diffs · no unverified analytical claims · spot-check one result
-against known reality.
+Definition of done: acceptance green · fresh-context review passed for live-affecting
+diffs · no unverified analytical claims · spot-check one result against reality.
 
----
+Also installed but optional: `@dietrichgebert/ponytail` pi package (minimality
+discipline — fights over-built code; note it minimizes code, not wrongness).
 
-## 4. INSTALL — agent, do this first
+## Where everything lives
 
-This machine has partial restrictions (managed laptop, possibly proxied npm). Install
-in two tiers; do NOT let Tier B block Tier A.
+In this repo (`ediab/pi-dotfiles`):
 
-**Tier A — zero-install core (no npm, no scripts):**
+| Artifact | Path |
+|---|---|
+| All skills | `home/skills/<name>/` |
+| Verification kit | `home/skills/data-task/templates/{datachecks,eval_harness,side_effects}.py` |
+| Workflow reference (personal machine) | `docs/WORKFLOW.md` |
+| Hardening backlog (5 known gaps + plan) | `docs/plans/2026-08-23-workflow-hardening.md` |
+| Package list | `packages` array in `home/settings.json` |
+| This file | `WORK-PC.md` |
 
-```bash
-git clone git@github.com:ediab/pi-dotfiles.git   # or the approved mirror/copy
-mkdir -p ~/.pi/agent/skills
-cp -R pi-dotfiles/home/skills/* ~/.pi/agent/skills/
-ls ~/.pi/agent/skills   # expect: bro convert-documents-to-markdown data-task
-                        # diagnosing-bugs domain-modeling grill-me grill-with-docs
-                        # grilling handoff herdr plan research review show-me wait-what
-```
+On a deployed machine, skills land in `~/.pi/agent/skills/<name>/`; `data-task`
+references its templates at that absolute path, so keep that layout if you copy it.
 
-Verify: start `pi` in any repo, type `/plan` — the planning-mode prompt should load;
-mention a data transform task — the `data-task` skill should engage.
+## Notes for selective adoption
 
-**Tier B — packages, only if approved:** the canonical list is `packages` in
-`home/settings.json`. None are required for the workflow above except optionally
-`@dietrichgebert/ponytail` (minimality discipline) — `pi install` it if the registry
-is reachable; otherwise skip without consequence.
+- **Dependency:** `grill-with-docs` requires `domain-modeling` — copy together or
+  not at all.
+- **Coherence:** `review` reads the `data-task` checklist; the checklist assumes the
+  templates exist. The trio (`data-task` + templates, `plan`, `review`) is the load-
+  bearing set; grilling/domain-modeling/diagnosing-bugs/research are independent.
+- `plan` and `review` assume the `pi` harness (headless mode for review). Any agent
+  harness with isolated sub-processes works for the same pattern.
+- Never copy personal credentials or machine-specific notes (`auth.json`, VPS/SSH
+  sections of AGENTS.md). Configure model/provider locally.
 
-**Do NOT copy:** `auth.json` (personal API keys), the personal `AGENTS.md` VPS/SSH
-sections, MCP configs. Work-machine credentials and policies are separate; ask Elias
-what model/provider to configure.
-
-## 5. MISSION — validate against live work projects
-
-Full autonomy granted, bounded as follows. Work through Elias's live work repos
-(discover them, then confirm the list with Elias before starting).
-
-**Guardrails (hard):**
-
-- Branch + local commits only. NEVER push to any remote. Never rebase shared branches.
-- Never touch credentials, secrets, prod configs, CI files, or dependency versions
-  without asking.
-- Destructive ops (`rm -rf`, force-push, dropping tables) → ask first, always.
-- If a repo isn't clearly Elias's own work, report instead of modifying.
-
-**Per-repo procedure:**
-
-1. **Classify:** Is it a data pipeline / ML / dashboard repo? Scheduled anywhere?
-   External side effects? What data sources? Existing tests?
-2. **Risk-rank** all repos: scheduled + side effects + weak tests = highest priority.
-   Inconsistent test culture overall means triage, not blanket rollout.
-3. **For each repo (highest risk first):**
-   - Create/update `AGENTS.md`: what the repo is, how to run/test it, known source
-     quirks, deploy notes. Factual and short — this is the highest-leverage file an
-     agent reads.
-   - If the domain has confusing vocabulary, run a `grill-with-docs` session with
-     Elias → produce `CONTEXT.md`.
-   - Copy the three template files into `tests/`; wire acceptance checks for the most
-     critical transform(s): grain keys, count-vs-baseline, freshness, no-future-dates.
-     Wire `side_effects.Emitter` wherever alerts/webhooks are sent.
-     Make checks runnable: `pytest tests/`.
-   - Fix ONLY what blocks the checks from running. Anything deeper → report.
-4. **Report:** write `ROLLOUT-REPORT.md` (repo root, uncommitted) summarizing: repos
-   seen, classification table, changes made (file + why), checks wired + their status,
-   recommendations not acted on, and anything that needs human decisions.
-
-**Stop conditions:** missing credentials for a source; ambiguity about repo ownership;
-any request that would touch teammates' work; Snowflake access questions (use only
-sanctioned/read-only paths on a corporate account).
-
-## 6. Expected deltas vs the personal setup
-
-- Model/provider will differ (corporate gateway or different API key) — configure,
-  don't import.
-- Corporate Snowflake: prefer an existing read-only role; the personal machine's
-  lesson (agents should never hold write credentials) applies doubly at work.
-- Herdr, intercom, VPS deploy scripts are personal-machine conveniences — skip.
-- If npm is blocked entirely, everything in sections 1–5 still works: the whole
-  methodology is markdown + copied Python files.
-
----
-
-*Maintained in `ediab/pi-dotfiles`. When reality contradicts this file, fix one of them
-immediately.*
+*When reality contradicts this file, fix one of them immediately.*

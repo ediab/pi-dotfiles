@@ -4,8 +4,9 @@ Elias's personal [pi](https://github.com/earendil-works/pi) (coding-agent harnes
 One repo, one command, and a fresh machine ends up with the same pi config every time.
 
 > Setting up a new/work machine? Have an agent read **[WORK-PC.md](WORK-PC.md)** —
-> it contains the workflow rationale, install steps (including a zero-install path),
-> and a validation mission to run against live projects.
+> it records the problem, the diagnosis, and what was built (skills, verification
+> kit, workflow) with rationale and exact locations, so an agent can selectively
+> adopt whichever parts apply.
 
 ## What you get
 
