@@ -14,7 +14,8 @@
     "npm:pi-terminal-theme",
     "npm:pi-intercom",
     "npm:pi-btw",
-    "https://github.com/dodo-reach/pi-clarify"
+    "https://github.com/dodo-reach/pi-clarify",
+    "npm:@dietrichgebert/ponytail"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
