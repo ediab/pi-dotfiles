@@ -3,11 +3,6 @@
 Elias's personal [pi](https://github.com/earendil-works/pi) (coding-agent harness) setup.
 One repo, one command, and a fresh machine ends up with the same pi config every time.
 
-> Setting up a new/work machine? Have an agent read **[WORK-PC.md](WORK-PC.md)** —
-> it records the problem, the diagnosis, and what was built (skills, verification
-> kit, workflow) with rationale and exact locations, so an agent can selectively
-> adopt whichever parts apply.
-
 ## What you get
 
 Running the bootstrap installs:
