@@ -65,11 +65,13 @@ for ext in "${CUSTOM_EXTENSIONS[@]}"; do
   cp "$src" "$PI_EXTENSIONS_DIR/$(basename "$src")"
   echo "    $ext  re-synced"
 done
-for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
-  src="$SCRIPT_DIR/home/extensions/$ext"
-  mkdir -p "$PI_EXTENSIONS_DIR/$ext"
-  cp -R "$src/". "$PI_EXTENSIONS_DIR/$ext/"
-  echo "    $ext/  re-synced"
-done
+if [ "${#CUSTOM_EXTENSION_DIRS[@]}" -gt 0 ]; then
+  for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
+    src="$SCRIPT_DIR/home/extensions/$ext"
+    mkdir -p "$PI_EXTENSIONS_DIR/$ext"
+    cp -R "$src/". "$PI_EXTENSIONS_DIR/$ext/"
+    echo "    $ext/  re-synced"
+  done
+fi
 
 echo "==> done."
