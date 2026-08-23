@@ -103,6 +103,16 @@ for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   echo "    $ext/  installed"
 done
 
+# Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
+PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
+mkdir -p "$PI_PROMPTS_DIR"
+shopt -s nullglob
+for src in "$SCRIPT_DIR/home/prompts/"*.md; do
+  cp "$src" "$PI_PROMPTS_DIR/"
+  echo "    $(basename "$src")  installed"
+done
+shopt -u nullglob
+
 # Seed ~/.pi/agent/AGENTS.md from the sanitized repo copy. Only when absent — never clobber
 # local-only sections like VPS access details.
 if [ ! -f "$HOME/.pi/agent/AGENTS.md" ] && [ -f "$SCRIPT_DIR/home/AGENTS.md" ]; then

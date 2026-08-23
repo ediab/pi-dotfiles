@@ -74,4 +74,14 @@ if [ "${#CUSTOM_EXTENSION_DIRS[@]}" -gt 0 ]; then
   done
 fi
 
+# Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
+PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
+mkdir -p "$PI_PROMPTS_DIR"
+shopt -s nullglob
+for src in "$SCRIPT_DIR/home/prompts/"*.md; do
+  cp "$src" "$PI_PROMPTS_DIR/"
+  echo "    $(basename "$src")  re-synced"
+done
+shopt -u nullglob
+
 echo "==> done."

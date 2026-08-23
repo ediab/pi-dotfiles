@@ -14,11 +14,14 @@ rsync -az "$PI_DIR/settings.json" "$VPS_HOST:~/.pi/agent/settings.json"
 rsync -az "$PI_DIR/auth.json" "$VPS_HOST:~/.pi/agent/auth.json"
 ssh "$VPS_HOST" 'chmod 600 ~/.pi/agent/auth.json'
 
-echo "==> 2/4  skills"
+echo "==> 2/4  skills + prompts"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
+rsync -az --delete "$REPO_DIR/home/prompts/" "$VPS_HOST:~/.pi/agent/prompts/"
 
 echo "==> 3/4  extensions"
-rsync -az --delete "$REPO_DIR/home/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
+# herdr-agent-state.ts is machine-managed by Herdr (not in the repo) — exclude it so
+# --delete doesn't strip it off the remote.
+rsync -az --delete --exclude=herdr-agent-state.ts "$REPO_DIR/home/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
 
 echo "==> 4/4  reconcile packages"
 # Read the canonical package list from the freshly deployed settings.json on the VPS,
