@@ -116,8 +116,10 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   by `bootstrap.sh` step 4; watch path: `~/.pi/agent/settings.json`).
 - `deploy-vps.sh` — pushes `home/skills/`, `home/extensions/`, and the live settings to the
   VPS (`ssh vps`) and reconciles installed packages against the canonical list.
-- `docs/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
+- `docs/plans/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
   **local-only** and gitignored (not canonical config; find them in git history).
+  Exceptions, versioned on purpose: `docs/WORKFLOW.md` (workflow reference) and
+  `docs/plans/2026-08-23-workflow-hardening.md` (hardening backlog).
 
 ## How the sync works
 
