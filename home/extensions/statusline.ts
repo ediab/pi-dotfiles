@@ -1,14 +1,13 @@
 /**
  * elias-statusline — theme-aware HUD for Pi.
  * Forked from pi-shannon-statusline: matrix rain removed, colors driven by
- * ctx.ui.theme instead of a hardcoded Monokai Pro palette.
+ * ctx.ui.theme. Simplified: no icons, no timer, bare context %, live ponytail
+ * status appended at render time.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { wrapTextWithAnsi } from "@earendil-works/pi-tui";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { homedir } from "node:os";
 
 const execFileAsync = promisify(execFile);
@@ -20,31 +19,13 @@ interface GitStatus {
 	isDirty: boolean;
 	ahead: number;
 	behind: number;
-	modified: number;
-	added: number;
-	deleted: number;
-	untracked: number;
 }
 
 // ── State ──────────────────────────────────────────────────────────
 
-let sessionStartTime = 0;
-let lastCtx: any = null;
-let tickInterval: ReturnType<typeof setInterval> | null = null;
 let thinkingLevel = "";
 let hudText = "";
 let requestFooterRender: (() => void) | null = null;
-
-// ── Icons (plain glyphs, no emoji — matches shannon's set) ─────────
-
-const I_MODEL = "λ";
-const I_PATH = "⌘";
-const I_BRANCH = "⎇";
-const I_CLOCK = "✦";
-const I_CTX = "⊡";
-const I_CLAUDE = "※";
-const I_MCP = "⊕";
-const I_THINK = "✶";
 
 // ── Theme helpers ──────────────────────────────────────────────────
 
@@ -58,7 +39,7 @@ function sep(theme: Theme): string {
 	return fg(theme, "dim", "│");
 }
 
-// thinking tiers — higher effort = hotter color, mirroring ctxColor
+// thinking tiers — higher effort = hotter color
 const THINK_COLOR: Record<string, string> = {
 	minimal: "dim",
 	low: "success",
@@ -116,31 +97,12 @@ function shortenDisplayPath(fullPath: string, home: string, maxLen: number): str
 	return `${prefix ? prefix + "/" : ""}…/${truncateTailSegment(tail[0]!, budget)}`;
 }
 
-// ── Context bar (theme-aware: threshold tokens, no rgb gradient) ────
+// ── Context ────────────────────────────────────────────────────────
 
 function ctxColor(percent: number): string {
 	if (percent >= 85) return "error";
 	if (percent >= 70) return "warning";
 	return "success";
-}
-
-function ctxBar(theme: Theme, percent: number, width: number): string {
-	const safeP = Math.min(100, Math.max(0, percent));
-	const filled = Math.round((safeP / 100) * width);
-	const empty = width - filled;
-	return `${fg(theme, ctxColor(safeP), "█".repeat(filled))}${fg(theme, "dim", "░".repeat(empty))}`;
-}
-
-// ── Formatters ─────────────────────────────────────────────────────
-
-function fmtDuration(ms: number): string {
-	if (ms < 1000) return `${ms}ms`;
-	const s = ms / 1000;
-	if (s < 60) return `${s.toFixed(0)}s`;
-	const m = Math.floor(s / 60);
-	if (m < 60) return `${m}m ${Math.round(s % 60)}s`;
-	const h = Math.floor(m / 60);
-	return `${h}h ${m % 60}m`;
 }
 
 // ── Git ────────────────────────────────────────────────────────────
@@ -154,22 +116,14 @@ async function getGit(dir: string): Promise<GitStatus | null> {
 		const branch = branchOut.trim();
 		if (!branch) return null;
 
-		let isDirty = false, modified = 0, added = 0, deleted = 0, untracked = 0;
+		let isDirty = false, ahead = 0, behind = 0;
 		try {
-			const { stdout: statusOut } = await execFileAsync("git", ["--no-optional-locks", "status", "--porcelain"], {
+			const { stdout } = await execFileAsync("git", ["--no-optional-locks", "status", "--porcelain"], {
 				cwd: dir, timeout: 1500, encoding: "utf8",
 			});
-			const lines = statusOut.trim().split("\n").filter(Boolean);
-			isDirty = lines.length > 0;
-			for (const line of lines) {
-				if (line.startsWith("??")) untracked++;
-				else if (line[0] === "A") added++;
-				else if (line[0] === "D" || line[1] === "D") deleted++;
-				else if (line[0] === "M" || line[1] === "M" || line[0] === "R" || line[0] === "C") modified++;
-			}
+			isDirty = stdout.trim().length > 0;
 		} catch { /* ignore */ }
 
-		let ahead = 0, behind = 0;
 		try {
 			const { stdout: revOut } = await execFileAsync("git", ["rev-list", "--left-right", "--count", "@{upstream}...HEAD"], {
 				cwd: dir, timeout: 1500, encoding: "utf8",
@@ -178,114 +132,78 @@ async function getGit(dir: string): Promise<GitStatus | null> {
 			if (parts.length === 2) { behind = parseInt(parts[0]!, 10) || 0; ahead = parseInt(parts[1]!, 10) || 0; }
 		} catch { /* no upstream */ }
 
-		return { branch, isDirty, ahead, behind, modified, added, deleted, untracked };
+		return { branch, isDirty, ahead, behind };
 	} catch { return null; }
 }
 
-// ── Config counter ─────────────────────────────────────────────────
+// ── Ponytail ───────────────────────────────────────────────────────
 
-function countConfigs(dir: string) {
-	let agentsMd = 0, mcps = 0;
-	const home = homedir();
-	try {
-		if (existsSync(join(dir, "AGENTS.md"))) agentsMd++;
-		if (existsSync(join(dir, "CLAUDE.md"))) agentsMd++;
-
-		try {
-			const mcpConfig = JSON.parse(readFileSync(join(home, ".pi", "agent", "mcp.json"), "utf8"));
-			const servers = mcpConfig?.mcpServers;
-			if (servers && typeof servers === "object") mcps = Object.keys(servers).length;
-		} catch { /* ignore */ }
-	} catch { /* ignore */ }
-	return { agentsMd, mcps };
-}
-
-// ── Mode segments (icon + dim label + colored level, no emoji) ─────
-
-function thinkSegment(theme: Theme, level: string): string {
-	const color = THINK_COLOR[level] ?? "accent";
-	return `${fg(theme, color, I_THINK)} ${fg(theme, "muted", "thinking")} ${fg(theme, color, level.toUpperCase())}`;
+/**
+ * Live ponytail mode from the ponytail extension's status indicator
+ * (`● 🐴 ponytail: ⚡ FULL`). Strip its ANSI/emoji noise and keep the trailing
+ * word, re-themed to match this footer. Empty while ponytail is off.
+ */
+function ponytailSegment(theme: Theme, footerData: any): string {
+	const raw: string = footerData?.getExtensionStatuses?.().get("ponytail") ?? "";
+	const plain = raw.replace(/\x1b\[[0-9;]*m/g, "").trim();
+	if (!plain) return "";
+	const mode = plain.split(/\s+/).pop() ?? "";
+	if (!mode) return "";
+	return `${fg(theme, "muted", "ponytail")} ${fg(theme, "accent", mode.toUpperCase())}`;
 }
 
 // ── HUD renderer ───────────────────────────────────────────────────
 
-/** Read model provider + id from the live context, falling back to "pi". */
-function readModel(ctx: any): { provider: string; id: string } {
-	const m = ctx?.model;
-	if (m && typeof m.provider === "string" && typeof m.id === "string") {
-		return { provider: m.provider, id: m.id };
-	}
-	return { provider: "", id: "" };
-}
-
 async function buildHud(ctx: any): Promise<string> {
 	const theme: Theme = ctx?.ui?.theme;
-	const s = sep(theme);
 	const dir = ctx?.cwd ?? "";
+	const segments: string[] = [];
 
-	// Main line: model + thinking + context + path + git + configs + duration.
-	const line1: string[] = [];
-
-	const { provider, id } = readModel(ctx);
-	let modelStr: string;
-	if (provider && id) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "muted", provider)}/${fg(theme, "accent", id)}`;
-	} else if (id) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", id)}`;
-	} else if (provider) {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", provider)}`;
-	} else {
-		modelStr = `${fg(theme, "accent", I_MODEL)} ${fg(theme, "accent", "pi")}`;
+	// Model + thinking level: `provider/id MAX`.
+	const provider = ctx?.model?.provider ?? "";
+	const id = ctx?.model?.id ?? "";
+	let modelSeg = fg(theme, "accent", [provider, id].filter(Boolean).join("/") || "pi");
+	if (thinkingLevel && thinkingLevel !== "off") {
+		modelSeg += ` ${fg(theme, THINK_COLOR[thinkingLevel] ?? "accent", thinkingLevel.toUpperCase())}`;
 	}
-	line1.push(modelStr);
-
-	if (thinkingLevel && thinkingLevel !== "off") line1.push(thinkSegment(theme, thinkingLevel));
-
-	try {
-		const usage = ctx.getContextUsage?.();
-		if (usage) {
-			const pct = usage.percent ?? 0;
-			const bar = ctxBar(theme, pct, 10);
-			const win = usage.contextWindow ?? 0;
-			const winLabel = win >= 1_000_000 ? `${(win / 1_000_000).toFixed(1)}M` : win >= 1000 ? `${Math.round(win / 1000)}k` : "";
-			let ctxStr = `${fg(theme, "accent", I_CTX)} ${bar} ${fg(theme, ctxColor(pct), `${pct.toFixed(1)}%`)}`;
-			if (winLabel) ctxStr += ` ${fg(theme, "dim", `(${winLabel})`)}`;
-			line1.push(ctxStr);
-		}
-	} catch { /* context usage unavailable */ }
-
-	// Path + Git + Configs + Duration.
-	const line2: string[] = [];
+	segments.push(modelSeg);
 
 	if (dir) {
-		const home = homedir();
-		line2.push(`${fg(theme, "warning", I_PATH)} ${fg(theme, "warning", shortenDisplayPath(dir, home, 30))}`);
+		segments.push(fg(theme, "warning", shortenDisplayPath(dir, homedir(), 30)));
 	}
 
 	const git = await getGit(dir);
 	if (git) {
 		const dirty = git.isDirty ? "*" : "";
-		let gitStr = `${fg(theme, "accent", I_BRANCH)} ${fg(theme, "accent", `${git.branch}${dirty}`)}`;
-		const details: string[] = [];
-		if (git.ahead > 0) details.push(fg(theme, "success", `↑${git.ahead}`));
-		if (git.behind > 0) details.push(fg(theme, "error", `↓${git.behind}`));
-		if (git.modified > 0) details.push(fg(theme, "error", `!${git.modified}`));
-		if (git.added > 0) details.push(fg(theme, "success", `+${git.added}`));
-		if (git.deleted > 0) details.push(fg(theme, "error", `✘${git.deleted}`));
-		if (git.untracked > 0) details.push(fg(theme, "muted", `?${git.untracked}`));
-		if (details.length > 0) gitStr += ` ${details.join(" ")}`;
-		line2.push(gitStr);
+		let gitStr = fg(theme, "accent", `${git.branch}${dirty}`);
+		if (git.ahead > 0) gitStr += ` ${fg(theme, "success", `↑${git.ahead}`)}`;
+		if (git.behind > 0) gitStr += ` ${fg(theme, "error", `↓${git.behind}`)}`;
+		segments.push(gitStr);
 	}
 
-	const configs = countConfigs(dir);
-	if (configs.agentsMd > 0) line2.push(`${fg(theme, "accent", I_CLAUDE)} ${fg(theme, "accent", `×${configs.agentsMd}`)} ${fg(theme, "dim", "AGENTS.md")}`);
-	if (configs.mcps > 0) line2.push(`${fg(theme, "warning", I_MCP)} ${fg(theme, "warning", `×${configs.mcps}`)} ${fg(theme, "dim", "MCPs")}`);
+	try {
+		const usage = ctx.getContextUsage?.();
+		if (usage) {
+			const pct = Math.min(100, Math.max(0, usage.percent ?? 0));
+			let ctxSeg = fg(theme, ctxColor(pct), `${pct.toFixed(1)}%`);
+			const win = usage.contextWindow ?? 0;
+			const winLabel = win >= 1_000_000 ? `${Math.round(win / 1_000_000)}M`
+				: win >= 1000 ? `${Math.round(win / 1000)}k` : "";
+			if (winLabel) ctxSeg += ` ${fg(theme, "dim", `(${winLabel})`)}`;
+			segments.push(ctxSeg);
+		}
+	} catch { /* context usage unavailable */ }
 
-	if (sessionStartTime > 0) {
-		line2.push(`${fg(theme, "dim", I_CLOCK)} ${fg(theme, "dim", fmtDuration(Date.now() - sessionStartTime))}`);
+	// Session cost — same accumulation pi's default footer uses.
+	let cost = 0;
+	for (const e of ctx.sessionManager?.getEntries?.() ?? []) {
+		const u = e.type === "message" ? e.message?.usage
+			: (e.type === "branch_summary" || e.type === "compaction") ? e.usage : undefined;
+		if (u) cost += u.cost?.total ?? 0;
 	}
+	if (cost > 0) segments.push(fg(theme, "muted", `$${cost.toFixed(3)}`));
 
-	return [...line1, ...line2].join(` ${s} `);
+	return segments.join(` ${sep(theme)} `);
 }
 
 // ── Refresh + entry ────────────────────────────────────────────────
@@ -302,6 +220,7 @@ function installFooter(ctx: any) {
 		const requestRender = () => tui.requestRender();
 		requestFooterRender = requestRender;
 		const unsubscribe = footerData.onBranchChange(() => refreshHud(ctx));
+		const s = sep(theme);
 
 		return {
 			dispose() {
@@ -310,44 +229,29 @@ function installFooter(ctx: any) {
 			},
 			invalidate() {},
 			render(width: number): string[] {
-				const safeWidth = Math.max(1, width);
-				return [
-					...wrapTextWithAnsi(hudText, safeWidth),
-				];
+				// Ponytail appended here, not baked into hudText, so /ponytail <mode>
+				// flips instantly on the re-render its setStatus triggers.
+				const text = [hudText, ponytailSegment(theme, footerData)].filter(Boolean).join(` ${s} `);
+				return [...wrapTextWithAnsi(text, Math.max(1, width))];
 			},
 		};
 	});
 }
 
 export default function (pi: ExtensionAPI) {
-	function updateCtx(ctx: any) {
-		lastCtx = ctx;
-	}
-
 	pi.on("session_start", (_event, ctx) => {
-		sessionStartTime = Date.now();
 		hudText = "";
 		installFooter(ctx);
-		updateCtx(ctx);
 		thinkingLevel = pi.getThinkingLevel?.() ?? "";
-		if (tickInterval) clearInterval(tickInterval);
-		tickInterval = setInterval(() => { if (lastCtx) refreshHud(lastCtx); }, 1000);
 		refreshHud(ctx);
 	});
 
-	pi.on("model_select", (_event, ctx) => {
-		updateCtx(ctx);
-		refreshHud(ctx);
-	});
+	pi.on("model_select", (_event, ctx) => refreshHud(ctx));
 
 	pi.on("thinking_level_select", (event, ctx) => {
 		thinkingLevel = (event as any).level ?? thinkingLevel;
-		updateCtx(ctx);
 		refreshHud(ctx);
 	});
 
-	pi.on("turn_end", (_event, ctx) => {
-		updateCtx(ctx);
-		refreshHud(ctx);
-	});
+	pi.on("turn_end", (_event, ctx) => refreshHud(ctx));
 }

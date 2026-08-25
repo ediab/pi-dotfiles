@@ -74,6 +74,20 @@ if [ "${#CUSTOM_EXTENSION_DIRS[@]}" -gt 0 ]; then
   done
 fi
 
+# Custom agents (pi-subagents-lite): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
+PI_AGENTS_DIR="$HOME/.pi/agent/agents"
+mkdir -p "$PI_AGENTS_DIR"
+shopt -s nullglob
+for src in "$SCRIPT_DIR/home/agents/"*.md; do
+  cp "$src" "$PI_AGENTS_DIR/"
+  echo "    $(basename "$src")  re-synced"
+done
+shopt -u nullglob
+
+# pi-subagents-lite config (user-tuned: agent model mapping, system-prompt mode)
+cp "$SCRIPT_DIR/home/subagents-lite.json" "$HOME/.pi/agent/subagents-lite.json" \
+  && echo "    subagents-lite.json  re-synced"
+
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
 mkdir -p "$PI_PROMPTS_DIR"

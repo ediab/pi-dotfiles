@@ -1,0 +1,13 @@
+{
+  "agent": {
+    "default": null,
+    "general-purpose": "opencode-go/ox-alpha-free",
+    "forceBackground": false,
+    "systemPromptMode": "replace",
+    "includeContextFiles": true,
+    "loadSkillsImplicitly": false,
+    "loadExtensionsImplicitly": false,
+    "disableDefaultAgents": false,
+    "defaultMaxTurns": 40
+  }
+}

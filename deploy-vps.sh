@@ -14,9 +14,11 @@ rsync -az "$PI_DIR/settings.json" "$VPS_HOST:~/.pi/agent/settings.json"
 rsync -az "$PI_DIR/auth.json" "$VPS_HOST:~/.pi/agent/auth.json"
 ssh "$VPS_HOST" 'chmod 600 ~/.pi/agent/auth.json'
 
-echo "==> 2/4  skills + prompts"
+echo "==> 2/4  skills + prompts + agents"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 rsync -az --delete "$REPO_DIR/home/prompts/" "$VPS_HOST:~/.pi/agent/prompts/"
+rsync -az --delete "$REPO_DIR/home/agents/" "$VPS_HOST:~/.pi/agent/agents/"
+rsync -az "$REPO_DIR/home/subagents-lite.json" "$VPS_HOST:~/.pi/agent/subagents-lite.json"
 
 echo "==> 3/4  extensions"
 # herdr-agent-state.ts is machine-managed by Herdr (not in the repo) — exclude it so
