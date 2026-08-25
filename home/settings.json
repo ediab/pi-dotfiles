@@ -16,7 +16,6 @@
     "npm:pi-btw",
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
-    "npm:@dkmnx/pi-clarify",
     "npm:pi-subagents-lite"
   ],
   "enableInstallTelemetry": true,
