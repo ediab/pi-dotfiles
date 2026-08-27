@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.84.3",
   "theme": "terminal",
   "defaultProvider": "opencode-go",
-  "defaultModel": "ox-alpha-free",
+  "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
@@ -27,5 +27,5 @@
   "header": true,
   "header-info": true,
   "quietStartup": true,
-  "hideThinkingBlock": false
+  "hideThinkingBlock": true
 }
