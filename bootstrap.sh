@@ -117,6 +117,10 @@ shopt -u nullglob
 cp "$SCRIPT_DIR/home/subagents-lite.json" "$HOME/.pi/agent/subagents-lite.json" \
   && echo "    subagents-lite.json  installed"
 
+# Custom models (providers + model defs)
+cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
+  && echo "    models.json  installed"
+
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
 mkdir -p "$PI_PROMPTS_DIR"
