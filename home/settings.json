@@ -17,7 +17,7 @@
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
     "npm:pi-subagents-lite",
-    "git:github.com/earendil-works/pi-transcribe"
+    "ssh://git@github.com/earendil-works/pi-transcribe"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
