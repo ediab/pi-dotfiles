@@ -1,8 +1,8 @@
 {
   "lastChangelogVersion": "0.84.4",
   "theme": "terminal",
-  "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-pro",
+  "defaultProvider": "commandcode",
+  "defaultModel": "z-ai/glm-5.3-flash",
   "defaultThinkingLevel": "max",
   "packages": [
     "npm:pi-web-access",
@@ -16,7 +16,8 @@
     "npm:pi-btw",
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
-    "npm:pi-subagents-lite"
+    "npm:pi-subagents-lite",
+    "git:github.com/earendil-works/pi-transcribe"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
