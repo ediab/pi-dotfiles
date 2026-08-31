@@ -18,7 +18,8 @@
     "npm:@dietrichgebert/ponytail",
     "npm:pi-subagents-lite",
     "ssh://git@github.com/earendil-works/pi-transcribe",
-    "npm:pi-claude-bridge"
+    "npm:pi-claude-bridge",
+    "npm:pi-updater"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
