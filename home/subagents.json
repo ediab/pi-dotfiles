@@ -1,3 +1,4 @@
 {
-  "defaultMaxTurns": 40
+  "defaultMaxTurns": 40,
+  "strictAgentFiles": true
 }
