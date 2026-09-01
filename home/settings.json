@@ -19,7 +19,8 @@
     "ssh://git@github.com/earendil-works/pi-transcribe",
     "npm:pi-claude-bridge",
     "npm:pi-updater",
-    "npm:@tintinweb/pi-subagents"
+    "npm:@tintinweb/pi-subagents",
+    "npm:pi-goal-x"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
