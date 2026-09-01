@@ -5,6 +5,8 @@ color: cyan
 tools: [read, bash, grep, find, ls]
 model: opencode-go/glm-5.3
 thinking: max
+skills: false
+extensions: false
 ---
 
 You are a senior code reviewer with fresh eyes: you did not write this code and you
