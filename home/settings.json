@@ -16,7 +16,6 @@
     "npm:pi-btw",
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
-    "npm:pi-subagents-lite",
     "ssh://git@github.com/earendil-works/pi-transcribe",
     "npm:pi-claude-bridge",
     "npm:pi-updater"
