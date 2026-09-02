@@ -3,7 +3,7 @@ name: reviewer
 description: Fresh-context code review of a diff or changeset — correctness, security, architecture, performance. Report-only, never fixes. Use before merging or after any non-trivial implementation.
 color: cyan
 tools: [read, bash, grep, find, ls]
-model: commandcode/glm-5.3
+model: opencode-go/glm-5.3-flash
 thinking: max
 skills: false
 extensions: false

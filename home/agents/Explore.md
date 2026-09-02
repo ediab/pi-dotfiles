@@ -1,6 +1,6 @@
 ---
 name: Explore
-model: opencode-go/deepseek-v4-flash
+model: opencode-go/qwen3.8-flash
 thinking: off
 skills: false
 extensions: false

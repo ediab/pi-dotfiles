@@ -1,6 +1,6 @@
 ---
 name: review
-description: Fresh-context code review — spawns the reviewer subagent (GLM-5.3, max thinking) in this session with only intent + base ref, never this conversation. Use before merging or deploying anything that feeds live/scheduled jobs.
+description: Fresh-context code review — spawns the reviewer subagent (GLM-5.3 Flash, max thinking) in this session with only intent + base ref, never this conversation. Use before merging or deploying anything that feeds live/scheduled jobs.
 disable-model-invocation: true
 argument-hint: "[base-ref] — git ref to diff against (default: merge-base with main)"
 ---
