@@ -31,5 +31,5 @@
   "header": true,
   "header-info": true,
   "quietStartup": true,
-  "hideThinkingBlock": false
+  "hideThinkingBlock": true
 }
