@@ -1,9 +1,10 @@
 {
   "lastChangelogVersion": "0.84.4",
   "theme": "terminal",
-  "defaultProvider": "commandcode",
-  "defaultModel": "Qwen/Qwen3.8-Flash",
-  "defaultThinkingLevel": "max",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "muse-spark-1.3-contributor",
+  "defaultThinkingLevel": "xhigh",
+  "tuiMode": "fullscreen",
   "packages": [
     "npm:pi-web-access",
     "npm:pi-mcp-adapter",
@@ -12,7 +13,6 @@
     "npm:pi-lsp",
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-terminal-theme",
-    "npm:pi-intercom",
     "npm:@yceachan/pi-better-btw",
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
