@@ -20,7 +20,8 @@
     "npm:pi-claude-bridge",
     "npm:pi-updater",
     "npm:@tintinweb/pi-subagents",
-    "npm:pi-goal-x"
+    "npm:pi-goal-x",
+    "../../Dev/pi-bitwarden"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
