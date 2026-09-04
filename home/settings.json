@@ -13,7 +13,6 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:pi-terminal-theme",
     "npm:pi-intercom",
-    "npm:pi-btw",
     "https://github.com/dodo-reach/pi-clarify",
     "npm:@dietrichgebert/ponytail",
     "ssh://git@github.com/earendil-works/pi-transcribe",
