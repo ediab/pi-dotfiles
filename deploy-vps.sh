@@ -19,6 +19,7 @@ rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 rsync -az --delete "$REPO_DIR/home/prompts/" "$VPS_HOST:~/.pi/agent/prompts/"
 rsync -az --delete "$REPO_DIR/home/agents/" "$VPS_HOST:~/.pi/agent/agents/"
 rsync -az "$REPO_DIR/home/subagents.json" "$VPS_HOST:~/.pi/agent/subagents.json"
+rsync -az "$REPO_DIR/home/models.json" "$VPS_HOST:~/.pi/agent/models.json"
 ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy file from pre-tintinweb package
 
 echo "==> 3/4  extensions"
