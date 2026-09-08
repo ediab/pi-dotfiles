@@ -12,7 +12,8 @@
     "npm:pi-code-previews",
     "npm:pi-lsp",
     "npm:@dietrichgebert/ponytail",
-    "npm:pi-subagents-lite"
+    "npm:pi-subagents-lite",
+    "npm:pi-sidebar"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
