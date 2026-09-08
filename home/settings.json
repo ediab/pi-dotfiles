@@ -11,11 +11,7 @@
     "npm:@ff-labs/pi-fff",
     "npm:pi-code-previews",
     "npm:pi-lsp",
-    "npm:@dietrichgebert/ponytail",
-    "npm:pi-updater",
-    "npm:@tintinweb/pi-subagents",
-    "npm:pi-goal-x",
-    "npm:@janvitos/pi-plan-build"
+    "npm:@dietrichgebert/ponytail"
   ],
   "enableInstallTelemetry": true,
   "defaultProjectTrust": "always",
