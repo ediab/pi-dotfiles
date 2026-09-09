@@ -12,9 +12,9 @@
     "npm:pi-code-previews",
     "npm:pi-lsp",
     "npm:@dietrichgebert/ponytail",
-    "npm:pi-subagents-lite",
     "npm:pi-terminal-theme",
-    "npm:@saccolabs/pi-claude-cli"
+    "npm:@saccolabs/pi-claude-cli",
+    "npm:@tintinweb/pi-subagents"
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
