@@ -13,7 +13,8 @@
     "npm:pi-lsp",
     "npm:@dietrichgebert/ponytail",
     "npm:pi-subagents-lite",
-    "npm:pi-terminal-theme"
+    "npm:pi-terminal-theme",
+    "npm:@saccolabs/pi-claude-cli"
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
