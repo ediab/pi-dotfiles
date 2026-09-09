@@ -103,7 +103,7 @@ for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   echo "    $ext/  installed"
 done
 
-# Custom agents (pi-subagents): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
+# Custom agents (pi-subagents-lite): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
 PI_AGENTS_DIR="$HOME/.pi/agent/agents"
 mkdir -p "$PI_AGENTS_DIR"
 shopt -s nullglob
@@ -112,10 +112,6 @@ for src in "$SCRIPT_DIR/home/agents/"*.md; do
   echo "    $(basename "$src")  installed"
 done
 shopt -u nullglob
-
-# pi-subagents config (tintinweb defaults: max turns etc.)
-cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
-  && echo "    subagents.json  installed"
 
 # Custom models (providers + model defs)
 cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \

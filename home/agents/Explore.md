@@ -1,6 +1,6 @@
 ---
 name: Explore
-model: opencode-go/qwen3.8-flash
+model: opencode-go/muse-spark-1.3-contributor
 thinking: off
 skills: false
 extensions: false
