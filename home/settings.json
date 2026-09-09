@@ -13,7 +13,6 @@
     "npm:pi-lsp",
     "npm:@dietrichgebert/ponytail",
     "npm:pi-subagents-lite",
-    "npm:pi-sidebar",
     "npm:pi-terminal-theme"
   ],
   "enableInstallTelemetry": true,
