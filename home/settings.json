@@ -15,7 +15,7 @@
     "npm:pi-subagents-lite",
     "npm:pi-terminal-theme"
   ],
-  "enableInstallTelemetry": true,
+  "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
   "powerline": true,
   "steeringMode": "all",

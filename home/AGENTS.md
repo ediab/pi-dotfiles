@@ -85,7 +85,7 @@ Symlinked (edit in `~/dev/configs/` directly):
 - `vscode/settings.json` → `~/Library/Application Support/Code/User/settings.json`
 - `vscode/keybindings.json` → `~/Library/Application Support/Code/User/keybindings.json`
 
-Pi agent files — `settings.json`, `extensions/no-footer.ts`, `extensions/statusline.ts` — are **not** in configs. They live in `~/dev/pi-dotfiles/home/` and are deployed to `~/.pi/agent/` as copies by `bootstrap.sh`/`rebuild.sh`. Edit them in `~/dev/pi-dotfiles/home/`, then run `~/dev/pi-dotfiles/rebuild.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
+Pi agent files — `settings.json`, `extensions/` — are **not** in configs. They live in `~/dev/pi-dotfiles/home/` and are deployed to `~/.pi/agent/` as copies by `bootstrap.sh`/`rebuild.sh`. Edit them in `~/dev/pi-dotfiles/home/`, then run `~/dev/pi-dotfiles/rebuild.sh`. Note: `pi` itself rewrites `settings.json` (changelog version, installed-packages list); re-sync live→repo after such changes to avoid backup drift.
 
 Also: `vscode/extensions.txt` — list of installed VS Code extensions, regenerated with `code --list-extensions`.
 
