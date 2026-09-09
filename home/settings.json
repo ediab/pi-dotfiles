@@ -17,12 +17,8 @@
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
-  "powerline": true,
   "steeringMode": "all",
-  "followUpMode": "all",
-  "breadcrumb": "inner",
-  "header": true,
-  "header-info": true,
+  "followUpMode": "one-at-a-time",
   "quietStartup": true,
   "hideThinkingBlock": true
 }
