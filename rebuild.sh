@@ -74,7 +74,7 @@ if [ "${#CUSTOM_EXTENSION_DIRS[@]}" -gt 0 ]; then
   done
 fi
 
-# Custom agents (pi-subagents-lite): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
+# Custom agents (pi-subagents): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
 PI_AGENTS_DIR="$HOME/.pi/agent/agents"
 mkdir -p "$PI_AGENTS_DIR"
 shopt -s nullglob
@@ -87,6 +87,10 @@ shopt -u nullglob
 # Custom models (providers + model defs)
 cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
   && echo "    models.json  re-synced"
+
+# Subagent defaults (tintinweb pi-subagents global settings; pi never writes this file)
+cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
+  && echo "    subagents.json  re-synced"
 
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"

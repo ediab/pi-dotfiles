@@ -24,7 +24,8 @@ rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 rsync -az --delete "$REPO_DIR/home/prompts/" "$VPS_HOST:~/.pi/agent/prompts/"
 rsync -az --delete "$REPO_DIR/home/agents/" "$VPS_HOST:~/.pi/agent/agents/"
 rsync -az "$REPO_DIR/home/models.json" "$VPS_HOST:~/.pi/agent/models.json"
-ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents.json'  # legacy tintinweb config, superseded by pi-subagents-lite
+rsync -az "$REPO_DIR/home/subagents.json" "$VPS_HOST:~/.pi/agent/subagents.json"
+ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, superseded by tintinweb pi-subagents
 
 echo "==> 3/4  extensions"
 # herdr-agent-state.ts is machine-managed by Herdr (not in the repo) — exclude it so
