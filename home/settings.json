@@ -1,6 +1,6 @@
 {
   "lastChangelogVersion": "0.85.1",
-  "theme": "violet-breakwater",
+  "theme": "terminal",
   "defaultProvider": "opencode-go",
   "defaultModel": "muse-spark-1.3-contributor",
   "defaultThinkingLevel": "xhigh",
