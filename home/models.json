@@ -61,6 +61,72 @@
             "xhigh": null,
             "max": "max"
           }
+        },
+        {
+          "id": "deepseek-flash",
+          "name": "DeepSeek V4.1 Flash",
+          "api": "openai-completions",
+          "provider": "opencode-go",
+          "baseUrl": "https://opencode.ai/zen/go/v1",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "cost": {
+            "input": 0.22,
+            "output": 0.66,
+            "cacheRead": 0.007,
+            "cacheWrite": 0
+          },
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false,
+            "maxTokensField": "max_tokens",
+            "requiresReasoningContentOnAssistantMessages": true,
+            "thinkingFormat": "deepseek"
+          },
+          "contextWindow": 1000000,
+          "maxTokens": 384000,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": null,
+            "high": "high",
+            "max": "max"
+          }
+        }
+      ]
+    },
+    "deepseek": {
+      "models": [
+        {
+          "id": "deepseek-flash",
+          "name": "DeepSeek V4.1 Flash",
+          "api": "openai-completions",
+          "provider": "deepseek",
+          "baseUrl": "https://api.deepseek.com",
+          "reasoning": true,
+          "input": ["text", "image"],
+          "cost": {
+            "input": 0.14,
+            "output": 0.28,
+            "cacheRead": 0.0028,
+            "cacheWrite": 0
+          },
+          "contextWindow": 1000000,
+          "maxTokens": 384000,
+          "compat": {
+            "supportsStore": false,
+            "supportsDeveloperRole": false,
+            "maxTokensField": "max_tokens",
+            "requiresReasoningContentOnAssistantMessages": true,
+            "thinkingFormat": "deepseek"
+          },
+          "thinkingLevelMap": {
+            "minimal": null,
+            "low": "low",
+            "medium": null,
+            "high": "high",
+            "max": "max"
+          }
         }
       ]
     },
