@@ -17,7 +17,8 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:@juicesharp/rpiv-ask-user-question",
     "https://github.com/cathrynlavery/diagram-design",
-    "npm:pi-blackhole"
+    "npm:pi-blackhole",
+    "npm:awesome-pi-themes"
   ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
