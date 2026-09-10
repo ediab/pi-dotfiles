@@ -16,8 +16,7 @@ Running the bootstrap installs:
   nothing extra to do.
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
-- **Custom extensions** — every file under `home/extensions/` (`commandcode`, `statusline`,
-  `terminal-status-title`), copied to `~/.pi/agent/extensions/`.
+- **Custom extensions** — every file under `home/extensions/` (`terminal-status-title`), copied to `~/.pi/agent/extensions/`.
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
   (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
