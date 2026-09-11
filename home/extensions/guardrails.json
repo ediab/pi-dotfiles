@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@aliou/pi-guardrails@0.17.1/schema.json",
+  "$schema": "https://unpkg.com/@aliou/pi-guardrails/schema.json",
   "version": "0.17.1",
   "applyBuiltinDefaults": true,
   "onboarding": {
