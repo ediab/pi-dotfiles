@@ -16,12 +16,9 @@ Running the bootstrap installs:
   nothing extra to do.
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
-- **Custom extensions** — every file under `home/extensions/` (`terminal-status-title.js`,
-  `herdr-agent-state.ts`), copied to `~/.pi/agent/extensions/`. `herdr-agent-state.ts` is a
-  mirror of what the Herdr app installs (`HERDR_INTEGRATION_VERSION=8`): Herdr rewrites the
-  live file when it updates its integration, so copy it back into the repo after a Herdr
-  upgrade — the next `./rebuild.sh` would otherwise restore the older mirror. It no-ops
-  unless `HERDR_ENV=1`, so machines without Herdr are unaffected.
+- **Custom extensions** — every file under `home/extensions/` (`terminal-status-title.js`),
+  copied to `~/.pi/agent/extensions/`. Herdr's integration file is deliberately not vendored
+  here (see *What it does NOT install*).
 - **Guardrails config** — `home/extensions/guardrails.json` deployed to `~/.pi/agent/extensions/guardrails.json`
   (`@aliou/pi-guardrails` settings: outside-workspace path prompts off, secret-store policies on, `rm -rf` exempted for build dirs).
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
@@ -45,8 +42,12 @@ Running the bootstrap installs:
 - Auth / API keys (`~/.pi/agent/auth.json`)
 - Provider / model / theme settings (configure those in `~/.pi/agent/settings.json` after
   bootstrap, or edit `home/settings.json` and rebuild)
-- Herdr itself — the app installs its own integration (mirrored at
-  `home/extensions/herdr-agent-state.ts`) and the `herdr` skill alone does not install it
+- The Herdr integration file — `herdr integration install pi` writes and updates
+  `~/.pi/agent/extensions/herdr-agent-state.ts` (`HERDR_INTEGRATION_VERSION=8`; check with
+  `herdr integration status`, which flags outdated installs). Vendoring it here would let
+  `./rebuild.sh` push an older copy over a newer one, and the file no-ops unless
+  `HERDR_ENV=1` anyway — so the repo leaves it to Herdr. The `herdr` skill alone does not
+  install it.
 - The `use-tinyfish` skill in `~/.pi/agent/skills/` — `tinyfish connect` writes it, so it is
   CLI-managed and deliberately not mirrored into `home/skills/`
 
