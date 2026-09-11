@@ -22,6 +22,9 @@
     "npm:pi-updater",
     "npm:@aliou/pi-guardrails"
   ],
+  "skills": [
+    "!**/.agents/skills/use-tinyfish"
+  ],
   "enableInstallTelemetry": false,
   "defaultProjectTrust": "always",
   "steeringMode": "all",

@@ -98,6 +98,12 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   dir is deployed automatically.
 - **Extensions**: add/remove a file (`.ts`/`.js`) or a directory (`index.ts`/`index.js`)
   under `home/extensions/` — auto-discovered, no script edit needed.
+- `home/settings.json` carries one hand-written `skills` entry,
+  `"!**/.agents/skills/use-tinyfish"`. The TinyFish CLI installs its bundled skill into
+  every harness dir it recorded — including the canonical `~/.agents/skills/` that serves
+  codex/opencode — and pi scans that dir too, so the same skill loaded twice and pi opened
+  with a `[Skill conflict]` warning. The `!` glob hides the shared copy from pi (`~` is not
+  expanded in these patterns, so the glob form is required); drop it if you don't use TinyFish.
 
 **Heads-up:**
 
