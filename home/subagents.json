@@ -1,3 +1,5 @@
 {
-  "backgroundByDefault": false
+  "backgroundByDefault": false,
+  "reportUsage": true,
+  "showCost": true
 }
