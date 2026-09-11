@@ -17,6 +17,8 @@ Running the bootstrap installs:
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
 - **Custom extensions** — every file under `home/extensions/` (`terminal-status-title`), copied to `~/.pi/agent/extensions/`.
+- **Guardrails config** — `home/extensions/guardrails.json` deployed to `~/.pi/agent/extensions/guardrails.json`
+  (`@aliou/pi-guardrails` settings: outside-workspace path prompts off, secret-store policies on, `rm -rf` exempted for build dirs).
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
   (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
@@ -73,14 +75,14 @@ Edit the config files under `home/` in place, then re-apply:
 
 That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`,
-and `home/settings.json` into `~/.pi/agent/`.
+`home/settings.json` and the guardrails settings into `~/.pi/agent/`.
 
 ### Keeping the repo in sync
 
 | What | Direction | How |
 |---|---|---|
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
-| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
+| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents or granting guardrails paths) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
 | `auth.json`, `mcp.json`, `models-store.json`, sessions, caches | never in repo | secrets and runtime state, by design |
 
@@ -118,7 +120,7 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
 
 - `home/` — the actual config files, mirroring `~/.pi/agent/` one-to-one:
   `home/settings.json` -> `~/.pi/agent/settings.json`, `home/skills/` -> `~/.pi/agent/skills/`,
-  `home/extensions/` -> `~/.pi/agent/extensions/`, `home/agents/` -> `~/.pi/agent/agents/`,
+  `home/extensions/` -> `~/.pi/agent/extensions/` (incl. `guardrails.json`), `home/agents/` -> `~/.pi/agent/agents/`,
   `home/subagents.json` -> `~/.pi/agent/subagents.json`,
   `home/models.json` -> `~/.pi/agent/models.json`,
   `home/prompts/` -> `~/.pi/agent/prompts/`,

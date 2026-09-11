@@ -74,6 +74,11 @@ if [ "${#CUSTOM_EXTENSION_DIRS[@]}" -gt 0 ]; then
   done
 fi
 
+# Guardrails config — extension settings (a .json, so the loops above skip it).
+# Repo is source of truth: interactive "always allow" grants made live are overwritten.
+cp "$SCRIPT_DIR/home/extensions/guardrails.json" "$PI_EXTENSIONS_DIR/guardrails.json" \
+  && echo "    guardrails.json  re-synced"
+
 # Custom agents (pi-subagents): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
 PI_AGENTS_DIR="$HOME/.pi/agent/agents"
 mkdir -p "$PI_AGENTS_DIR"
