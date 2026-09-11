@@ -29,9 +29,10 @@ Running the bootstrap installs:
   (provider + model defs).
 - **Prompt templates** — every `.md` under `home/prompts/`, copied to `~/.pi/agent/prompts/`.
 - **Web-search config** — `home/web-search.json` deployed to `~/.pi/agent/web-search.json`
-  (pi-web-access routing: TinyFish primary, Exa fallback). Its API key is a macOS Keychain
-  lookup (`!security find-generic-password …`), so `rebuild.sh` deploys it but `bootstrap.sh`
-  and `deploy-vps.sh` do not — set the key up per machine.
+  (pi-web-access routing: TinyFish primary, Exa fallback). The TinyFish key is a macOS
+  Keychain lookup (`!security find-generic-password …`), so `bootstrap.sh` leaves the file
+  alone; `deploy-vps.sh` writes a Linux variant that reads `~/.pi/agent/tinyfish-api-key`
+  (0600, refilled from the local Keychain on every deploy).
 - **Agent config** — `home/settings.json` deployed as the canonical pi agent settings, and
   `home/AGENTS.md` seeded to `~/.pi/agent/AGENTS.md` (only when absent, so local-only
   sections like VPS access survive).
@@ -95,7 +96,7 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
 | `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents or granting guardrails paths) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
-| `auth.json`, `mcp.json`, `models-store.json`, `zentui.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design |
+| `auth.json`, `mcp.json`, `models-store.json`, `zentui.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design (`deploy-vps.sh` still mirrors the last two onto the VPS) |
 
 Bottom line: your settings reflect into the repo by themselves; the repo is the source of
 truth for skills, extensions, and the base `settings.json` that gets deployed to new machines.
@@ -147,8 +148,11 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `home/settings.json` when pi rewrites it. Triggered by the launchd agent
   `com.pi-dotfiles.sync-settings.plist` (a template in this repo, installed and path-substituted
   by `bootstrap.sh` step 4; watch path: `~/.pi/agent/settings.json`).
-- `deploy-vps.sh` — pushes `home/skills/`, `home/extensions/`, and the live settings to the
-  VPS (`ssh vps`) and reconciles installed packages against the canonical list.
+- `deploy-vps.sh` — mirrors the local harness onto the VPS (`ssh vps`): settings, auth,
+  skills, prompts, agents, `home/AGENTS.md`, extensions, models/subagents, the per-machine
+  package configs (`zentui.json`, `code-previews.json`), a Linux variant of `web-search.json`
+  plus its key file, then reconciles installed packages against the canonical list.
+  `mcp.json` stays per-machine (its `youtube-music` server runs a local macOS node build).
 - `docs/plans/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
   **local-only** and gitignored (not canonical config; find them in git history).
   `docs/WORKFLOW.md` and `docs/plans/2026-08-23-workflow-hardening.md` used to be the

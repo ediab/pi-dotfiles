@@ -19,13 +19,38 @@ if [ -f "$HOME/.config/ponytail/config.json" ]; then
   rsync -az "$HOME/.config/ponytail/config.json" "$VPS_HOST:~/.config/ponytail/config.json"
 fi
 
-echo "==> 2/4  skills + prompts + agents"
+echo "==> 2/4  skills + prompts + agents + AGENTS.md + configs"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
 rsync -az --delete "$REPO_DIR/home/prompts/" "$VPS_HOST:~/.pi/agent/prompts/"
 rsync -az --delete "$REPO_DIR/home/agents/" "$VPS_HOST:~/.pi/agent/agents/"
 rsync -az "$REPO_DIR/home/models.json" "$VPS_HOST:~/.pi/agent/models.json"
 rsync -az "$REPO_DIR/home/subagents.json" "$VPS_HOST:~/.pi/agent/subagents.json"
+rsync -az "$REPO_DIR/home/AGENTS.md" "$VPS_HOST:~/.pi/agent/AGENTS.md"
 ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, superseded by tintinweb pi-subagents
+# leftovers from packages that are no longer installed anywhere
+ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty ~/.pi/agent/intercom; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
+
+# Per-machine package configs: not versioned in the repo, but mirrored so the VPS behaves the same.
+for cfg in zentui.json code-previews.json; do
+  if [ -f "$PI_DIR/$cfg" ]; then
+    rsync -az "$PI_DIR/$cfg" "$VPS_HOST:~/.pi/agent/$cfg"
+  fi
+done
+
+# web-search.json: same routing/preferences as local, but the TinyFish key comes from a 0600
+# file on the VPS instead of the macOS Keychain (Linux has no `security`). The key is pulled
+# from the local Keychain when present and never lands in the repo.
+if command -v security >/dev/null 2>&1 && security find-generic-password -s tinyfish-api-key -w >/dev/null 2>&1; then
+  security find-generic-password -s tinyfish-api-key -w | ssh "$VPS_HOST" 'umask 077; cat > ~/.pi/agent/tinyfish-api-key'
+fi
+python3 - "$REPO_DIR/home/web-search.json" <<'PY' | ssh "$VPS_HOST" 'cat > ~/.pi/agent/web-search.json'
+import json, sys
+cfg = json.load(open(sys.argv[1]))
+cfg["tinyfishApiKey"] = '!cat "$HOME/.pi/agent/tinyfish-api-key"'
+print(json.dumps(cfg, indent=2) + "\n")
+PY
+# mcp.json is deliberately NOT synced: MCP servers are per-machine (youtube-music runs a local
+# macOS node build), so the VPS keeps its own entry list.
 
 echo "==> 3/4  extensions"
 # herdr-agent-state.ts is installed and versioned by Herdr on each machine (see

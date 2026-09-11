@@ -77,4 +77,4 @@ To access this VPS use `ssh vps` (alias defined in `~/.ssh/config`).
 - User: `diab`
 - IdentityFile: `~/.ssh/id_rsa_nroot`
 - ControlMaster multiplexing enabled; LocalForward 18789, 18792, 19999.
-- `deploy-vps.sh` does not sync `AGENTS.md`; the VPS has its own copy.
+- `deploy-vps.sh` mirrors this file to the VPS along with skills, extensions, agents and package configs.
