@@ -20,7 +20,9 @@ Running the bootstrap installs:
   copied to `~/.pi/agent/extensions/`. Herdr's integration file is deliberately not vendored
   here (see *What it does NOT install*).
 - **Guardrails config** — `home/extensions/guardrails.json` deployed to `~/.pi/agent/extensions/guardrails.json`
-  (`@aliou/pi-guardrails` settings: outside-workspace path prompts off, secret-store policies on, `rm -rf` exempted for build dirs).
+  (`@aliou/pi-guardrails` settings: outside-workspace path prompts off, secret-store policies on,
+  `rm -rf` and its variants — `-fr`, `-r -f`, `-R`, `--recursive --force`, chained — allowlisted so
+  they never prompt; every other dangerous command still does).
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
   (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
