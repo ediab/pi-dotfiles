@@ -1,0 +1,11 @@
+{
+  "provider": "exa",
+  "allowBrowserCookies": false,
+  "summaryModel": "deepseek/deepseek-v4-flash",
+  "workflow": "auto-summary",
+  "curatorTimeoutSeconds": 20,
+  "shortcuts": {
+    "curate": "off",
+    "activity": "off"
+  }
+}

@@ -2,8 +2,8 @@
 # pi-dotfiles — update pi + all installed packages, and re-sync bundled custom skills.
 # For day-to-day updates on a machine already bootstrapped by bootstrap.sh.
 # New machine? Use bootstrap.sh instead.
-#   rebuild.sh              → full: pi update --all + settings.json + skills + extensions + memo
-#   rebuild.sh --sync-only  → skills + extensions + memo only; no package or settings changes
+#   rebuild.sh              → full: pi update --all + settings.json + skills + extensions + web-search + memo
+#   rebuild.sh --sync-only  → skills + extensions + web-search + memo only; no package or settings changes
 #                             (used after skill/memo edits when packages/settings must stay put)
 set -euo pipefail
 
@@ -91,6 +91,11 @@ cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
 # Subagent defaults (tintinweb pi-subagents global settings; pi never writes this file)
 cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
   && echo "    subagents.json  re-synced"
+
+# Web search config (pi-web-access provider/workflow prefs). 0.29.0+ reads ~/.pi/agent/web-search.json;
+# the old ~/.pi/web-search.json is ignored unless XDG_CONFIG_HOME is set.
+cp "$SCRIPT_DIR/home/web-search.json" "$HOME/.pi/agent/web-search.json" \
+  && echo "    web-search.json  re-synced"
 
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
