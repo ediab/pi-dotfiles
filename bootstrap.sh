@@ -103,10 +103,6 @@ for ext in "${CUSTOM_EXTENSION_DIRS[@]}"; do
   echo "    $ext/  installed"
 done
 
-# Guardrails config — extension settings (a .json, so the loops above skip it).
-cp "$SCRIPT_DIR/home/extensions/guardrails.json" "$PI_EXTENSIONS_DIR/guardrails.json" \
-  && echo "    guardrails.json  installed"
-
 # Custom agents (pi-subagents): every .md in home/agents/ → ~/.pi/agent/agents/. Add/remove by file; no script edit needed.
 PI_AGENTS_DIR="$HOME/.pi/agent/agents"
 mkdir -p "$PI_AGENTS_DIR"
