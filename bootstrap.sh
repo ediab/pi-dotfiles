@@ -151,9 +151,12 @@ if command -v launchctl >/dev/null 2>&1 && [ -f "$SCRIPT_DIR/com.pi-dotfiles.syn
   LAUNCH_AGENT_DIR="$HOME/Library/LaunchAgents"
   LAUNCH_AGENT="$LAUNCH_AGENT_DIR/com.pi-dotfiles.sync-settings.plist"
   mkdir -p "$LAUNCH_AGENT_DIR"
-  sed -e "s|/Users/eliasdiab/dev/pi-dotfiles|$SCRIPT_DIR|g" \
-      -e "s|/Users/eliasdiab|$HOME|g" \
+  sed -e "s|__PI_DOTFILES_REPO__|$SCRIPT_DIR|g" \
+      -e "s|__PI_HOME__|$HOME|g" \
       "$SCRIPT_DIR/com.pi-dotfiles.sync-settings.plist" > "$LAUNCH_AGENT"
+  if grep -q '__PI_' "$LAUNCH_AGENT"; then
+    echo "    WARNING: plist still has unsubstituted placeholders — auto-sync will fail"
+  fi
   launchctl unload "$LAUNCH_AGENT" 2>/dev/null || true
   if launchctl load "$LAUNCH_AGENT"; then
     echo "    launchd agent installed: watches $HOME/.pi/agent/settings.json"

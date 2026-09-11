@@ -2,9 +2,10 @@
 # pi-dotfiles — update pi + all installed packages, and re-sync bundled custom skills.
 # For day-to-day updates on a machine already bootstrapped by bootstrap.sh.
 # New machine? Use bootstrap.sh instead.
-#   rebuild.sh              → full: pi update --all + settings.json + skills + extensions + web-search + memo
-#   rebuild.sh --sync-only  → skills + extensions + web-search + memo only; no package or settings changes
-#                             (used after skill/memo edits when packages/settings must stay put)
+#   rebuild.sh              → full: pi update --all + settings.json + all bundled config
+#   rebuild.sh --sync-only  → bundled config only (skills, extensions, agents, models,
+#                             subagents, web-search, prompts, guardrails); skips the package
+#                             update and the settings.json copy — for skill/extension edits
 set -euo pipefail
 
 SYNC_ONLY=0

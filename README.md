@@ -95,7 +95,7 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
 | `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents or granting guardrails paths) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
-| `auth.json`, `mcp.json`, `models-store.json`, sessions, caches | never in repo | secrets and runtime state, by design |
+| `auth.json`, `mcp.json`, `models-store.json`, `zentui.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design |
 
 Bottom line: your settings reflect into the repo by themselves; the repo is the source of
 truth for skills, extensions, and the base `settings.json` that gets deployed to new machines.
@@ -151,8 +151,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   VPS (`ssh vps`) and reconciles installed packages against the canonical list.
 - `docs/plans/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
   **local-only** and gitignored (not canonical config; find them in git history).
-  Exceptions, versioned on purpose: `docs/WORKFLOW.md` (workflow reference) and
-  `docs/plans/2026-08-23-workflow-hardening.md` (hardening backlog).
+  `docs/WORKFLOW.md` and `docs/plans/2026-08-23-workflow-hardening.md` used to be the
+  versioned exceptions; both were retired on 2026-09-11 after drifting from the real setup.
 
 ## How the sync works
 

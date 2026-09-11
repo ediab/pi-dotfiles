@@ -2,10 +2,9 @@
 .pi/
 
 # Historical/archival docs (local planning records — not canonical config).
-# WORKFLOW.md and the workflow-hardening plan are intentionally versioned:
-# they are canonical references, not scratch notes.
+# docs/WORKFLOW.md and docs/plans/2026-08-23-workflow-hardening.md were retired on
+# 2026-09-11 — they described the July setup and had drifted; find them in git history.
 docs/plans/*
-!docs/plans/2026-08-23-workflow-hardening.md
 docs/solutions/
 CONCEPTS.md
 HANDOFF.md
