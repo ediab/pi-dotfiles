@@ -16,7 +16,12 @@ Running the bootstrap installs:
   nothing extra to do.
 - **Custom skills** — every directory under `home/skills/`, copied to `~/.pi/agent/skills/`
   (the path pi actually scans).
-- **Custom extensions** — every file under `home/extensions/` (`terminal-status-title`), copied to `~/.pi/agent/extensions/`.
+- **Custom extensions** — every file under `home/extensions/` (`terminal-status-title.js`,
+  `herdr-agent-state.ts`), copied to `~/.pi/agent/extensions/`. `herdr-agent-state.ts` is a
+  mirror of what the Herdr app installs (`HERDR_INTEGRATION_VERSION=8`): Herdr rewrites the
+  live file when it updates its integration, so copy it back into the repo after a Herdr
+  upgrade — the next `./rebuild.sh` would otherwise restore the older mirror. It no-ops
+  unless `HERDR_ENV=1`, so machines without Herdr are unaffected.
 - **Guardrails config** — `home/extensions/guardrails.json` deployed to `~/.pi/agent/extensions/guardrails.json`
   (`@aliou/pi-guardrails` settings: outside-workspace path prompts off, secret-store policies on, `rm -rf` exempted for build dirs).
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
@@ -26,6 +31,10 @@ Running the bootstrap installs:
 - **Custom models** — `home/models.json` deployed to `~/.pi/agent/models.json`
   (provider + model defs).
 - **Prompt templates** — every `.md` under `home/prompts/`, copied to `~/.pi/agent/prompts/`.
+- **Web-search config** — `home/web-search.json` deployed to `~/.pi/agent/web-search.json`
+  (pi-web-access routing: TinyFish primary, Exa fallback). Its API key is a macOS Keychain
+  lookup (`!security find-generic-password …`), so `rebuild.sh` deploys it but `bootstrap.sh`
+  and `deploy-vps.sh` do not — set the key up per machine.
 - **Agent config** — `home/settings.json` deployed as the canonical pi agent settings, and
   `home/AGENTS.md` seeded to `~/.pi/agent/AGENTS.md` (only when absent, so local-only
   sections like VPS access survive).
@@ -36,9 +45,10 @@ Running the bootstrap installs:
 - Auth / API keys (`~/.pi/agent/auth.json`)
 - Provider / model / theme settings (configure those in `~/.pi/agent/settings.json` after
   bootstrap, or edit `home/settings.json` and rebuild)
-- Runtime-managed integrations — e.g. `extensions/herdr-agent-state.ts` is installed and
-  overwritten by the Herdr app itself; on a fresh machine, install the Herdr integration
-  separately (the `herdr` skill alone is not enough)
+- Herdr itself — the app installs its own integration (mirrored at
+  `home/extensions/herdr-agent-state.ts`) and the `herdr` skill alone does not install it
+- The `use-tinyfish` skill in `~/.pi/agent/skills/` — `tinyfish connect` writes it, so it is
+  CLI-managed and deliberately not mirrored into `home/skills/`
 
 ## Fresh-machine setup
 
@@ -75,14 +85,14 @@ Edit the config files under `home/` in place, then re-apply:
 
 That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`,
-`home/settings.json` and the guardrails settings into `~/.pi/agent/`.
+`home/web-search.json`, `home/settings.json` and the guardrails settings into `~/.pi/agent/`.
 
 ### Keeping the repo in sync
 
 | What | Direction | How |
 |---|---|---|
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
-| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents or granting guardrails paths) |
+| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents or granting guardrails paths) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
 | `auth.json`, `mcp.json`, `models-store.json`, sessions, caches | never in repo | secrets and runtime state, by design |
 
@@ -106,6 +116,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   codex/opencode — and pi scans that dir too, so the same skill loaded twice and pi opened
   with a `[Skill conflict]` warning. The `!` glob hides the shared copy from pi (`~` is not
   expanded in these patterns, so the glob form is required); drop it if you don't use TinyFish.
+  The pi-side copy in `~/.pi/agent/skills/use-tinyfish/` is written by `tinyfish connect` and
+  therefore is not mirrored into `home/skills/` — re-run that command to refresh it.
 
 **Heads-up:**
 
@@ -124,6 +136,7 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `home/subagents.json` -> `~/.pi/agent/subagents.json`,
   `home/models.json` -> `~/.pi/agent/models.json`,
   `home/prompts/` -> `~/.pi/agent/prompts/`,
+  `home/web-search.json` -> `~/.pi/agent/web-search.json`,
   `home/AGENTS.md` -> `~/.pi/agent/AGENTS.md`.
   Editing a file here is editing your deployed config.
 - `bootstrap.sh` — fresh-machine setup. Run once.

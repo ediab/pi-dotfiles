@@ -28,8 +28,9 @@ rsync -az "$REPO_DIR/home/subagents.json" "$VPS_HOST:~/.pi/agent/subagents.json"
 ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, superseded by tintinweb pi-subagents
 
 echo "==> 3/4  extensions"
-# herdr-agent-state.ts is machine-managed by Herdr (not in the repo) — exclude it so
-# --delete doesn't strip it off the remote.
+# herdr-agent-state.ts is mirrored in the repo but managed by Herdr on each machine
+# (HERDR_INTEGRATION_VERSION=8): the VPS's own Herdr install owns that file, so exclude it
+# and let --delete leave the remote copy alone.
 rsync -az --delete --exclude=herdr-agent-state.ts "$REPO_DIR/home/extensions/" "$VPS_HOST:~/.pi/agent/extensions/"
 
 echo "==> 4/4  reconcile packages"
