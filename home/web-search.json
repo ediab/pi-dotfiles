@@ -1,5 +1,18 @@
 {
-  "provider": "exa",
+  "tinyfishApiKey": "!security find-generic-password -s tinyfish-api-key -w",
+  "searchRouting": {
+    "providers": [
+      "tinyfish",
+      "exa"
+    ],
+    "fallbackOn": [
+      "transient",
+      "quota",
+      "network",
+      "invalid-response",
+      "unsupported"
+    ]
+  },
   "allowBrowserCookies": false,
   "summaryModel": "deepseek/deepseek-v4-flash",
   "workflow": "auto-summary",
