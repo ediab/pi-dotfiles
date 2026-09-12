@@ -6,6 +6,10 @@ import { basename, dirname, isAbsolute, join, relative } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 export const ENTRY_TYPE = "plan-files-state";
+// Widget key owned by upstream npm:@narumitw/pi-plan-mode (see its
+// src/presentation.ts): the 3-line "Plan mode: planning" banner. Clearing it is
+// display-only and touches neither the plan-mode status entry nor plan state.
+export const UPSTREAM_PLANNING_WIDGET_KEY = "plan-mode-plan";
 const UPSTREAM = "plan-mode-state";
 const COMPLETE = "plan_mode_complete";
 const exec = promisify(execFile);
@@ -78,6 +82,18 @@ function sameSubjects(left: string, right: string) {
   return JSON.stringify(checklist(left).map((t) => t.subject)) === JSON.stringify(checklist(right).map((t) => t.subject));
 }
 
+// Copies existing tick marks from `current` onto a revision whose checklist
+// subjects/order are unchanged, so prose-only revisions keep manual progress.
+function mergedChecks(plan: string, current: string): string {
+  const chars = plan.split("");
+  const existing = checklist(current);
+  checklist(plan).forEach((task, index) => {
+    const source = existing[index];
+    if (source && current[source.position] !== " ") chars[task.position] = current[source.position];
+  });
+  return chars.join("");
+}
+
 export async function repositoryRoot(cwd: string): Promise<{ root: string; fallback: boolean }> {
   try {
     const { stdout } = await exec("git", ["-C", cwd, "rev-parse", "--show-toplevel"]);
@@ -127,9 +143,30 @@ export async function savePlan(root: string, plan: string, key: string, previous
   if (previous?.workflow === key) {
     if (previous.root !== root) throw new Error("Working repository changed during this plan workflow");
     await queue(previous.path, async () => {
-      const current = await checkedContents(previous);
-      if (withoutChecks(current) !== withoutChecks(previous.plan)) throw new Error("Plan file has manual edits; refusing to overwrite them. Restore the saved version before resubmitting.");
-      if (previous.plan !== plan) await writeFile(previous.path, `${plan}\n`, { flag: constants.O_WRONLY | constants.O_TRUNC | constants.O_NOFOLLOW });
+      let current: string | undefined;
+      try {
+        current = await checkedContents(previous);
+      } catch (error) {
+        // A deleted plan file (or its directory) is recoverable: recreate the
+        // same path below instead of failing every future revision.
+        if (!record(error) || error.code !== "ENOENT") throw error;
+      }
+      if (current === undefined) {
+        await safePath(previous.root, previous.path, true);
+        try {
+          await writeFile(previous.path, `${plan}\n`, { flag: constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | constants.O_NOFOLLOW });
+        } catch (error) {
+          if (record(error) && error.code === "EEXIST") throw new Error(`Plan file reappeared while recreating ${previous.path}; refusing to overwrite it. Restore it or start a new plan.`);
+          throw error;
+        }
+        return;
+      }
+      const existing = current;
+      if (withoutChecks(existing) !== withoutChecks(previous.plan)) throw new Error("Plan file has manual edits; refusing to overwrite them. Restore the saved version before resubmitting.");
+      const aligned = sameSubjects(previous.plan, plan);
+      if (!aligned && checklist(existing).some((t) => existing[t.position] !== " ")) throw new Error("Revision changes the task checklist while tasks are checked; uncheck the saved plan or keep the original task subjects/order, then resubmit.");
+      const contents = `${aligned ? mergedChecks(plan, existing) : plan}\n`;
+      if (contents !== existing) await writeFile(previous.path, contents, { flag: constants.O_WRONLY | constants.O_TRUNC | constants.O_NOFOLLOW });
     });
     return { ...previous, plan, approved: false };
   }
@@ -179,14 +216,18 @@ export async function parentBranch(path: string): Promise<Entry[]> {
 export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
   // Reservations prevent parallel creates of identical subjects from sharing an ordinal.
   const reservations = new Map<string, Map<string, number>>();
+  // Tool calls that produced a tool_result. Denied or aborted calls never do,
+  // so tool_execution_end can release the reservation they leave behind.
+  const resolvedCalls = new Set<string>();
   const branch = (ctx: ExtensionContext) => ctx.sessionManager.getBranch();
   const state = (ctx: ExtensionContext) => savedState(branch(ctx));
   const notify = (ctx: ExtensionContext, error: unknown) => ctx.ui.notify(`Plan files: ${error instanceof Error ? error.message : String(error)}`, "error");
   const persist = (value: SavedState) => pi.appendEntry(ENTRY_TYPE, value);
   const reservationKey = (ctx: ExtensionContext, artifact: Artifact) => `${ctx.sessionManager.getSessionId()}:${artifact.path}`;
+  const clearReservations = () => { reservations.clear(); resolvedCalls.clear(); };
 
   // State is read from getBranch on every event, so reload/tree navigation never replays file writes.
-  const restore = (_event: unknown, ctx: ExtensionContext) => { reservations.clear(); state(ctx); };
+  const restore = (_event: unknown, ctx: ExtensionContext) => { clearReservations(); state(ctx); hidePlanningWidget(ctx); };
   pi.on("session_start", restore);
   pi.on("session_tree", restore);
 
@@ -216,7 +257,11 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
     if (active) return { block: true, reason: "Do not use live todos in Plan mode. Include proposed Markdown checkboxes in the completed plan; live tasks start only after implementation approval." };
     const saved = state(ctx);
     const artifact = saved.artifact;
-    if (!artifact?.approved || saved.failedPlan || input.action !== "create") return;
+    if (!artifact?.approved || saved.failedPlan) return;
+    if (input.action === "clear") {
+      return { block: true, reason: "Clearing all todos would orphan linked plan tasks and leave their checkboxes stale. Operate on specific task ids instead." };
+    }
+    if (input.action !== "create") return;
     const tasks = checklist(artifact.plan);
     const key = reservationKey(ctx, artifact);
     const reserved = reservations.get(key) ?? new Map<string, number>();
@@ -226,7 +271,8 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
     const details = snapshot?.type === "message" && snapshot.message.role === "toolResult" ? snapshot.message.details : undefined;
     if (record(details) && Array.isArray(details.tasks)) {
       for (const task of details.tasks) {
-        if (record(task) && record(task.metadata) && task.metadata.piPlanFile === relative(artifact.root, artifact.path)
+        // Deleted tasks are terminal; their ordinal must be reusable by a replacement.
+        if (record(task) && task.status !== "deleted" && record(task.metadata) && task.metadata.piPlanFile === relative(artifact.root, artifact.path)
           && Number.isInteger(task.metadata.piPlanTask) && tasks[Number(task.metadata.piPlanTask) - 1]?.subject === task.subject) occupied.add(Number(task.metadata.piPlanTask));
       }
     }
@@ -252,6 +298,7 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
       return;
     }
     if (event.toolName !== "todo") return;
+    resolvedCalls.add(event.toolCallId);
     const saved = state(ctx);
     const artifact = saved.artifact;
     if (!artifact?.approved || saved.failedPlan || upstream(branch(ctx))?.enabled) return;
@@ -279,8 +326,20 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
     } catch (error) { notify(ctx, error); }
   });
 
+  // Reservations only bridge the gap between a todo tool_call and its result.
+  // A denied/aborted call emits tool_execution_end but never tool_result.
+  pi.on("tool_execution_end", (event) => {
+    if (resolvedCalls.has(event.toolCallId)) return;
+    for (const reserved of reservations.values()) reserved.delete(event.toolCallId);
+  });
+  // toolResults are persisted before turn_end; drop remaining reservations so a
+  // deleted or retried task can reuse its ordinal in later turns.
+  pi.on("turn_end", clearReservations);
+
   // Global extensions load before npm packages: upstream accepts legacy plans at
   // agent_end, then shows its ready menu at agent_settled, after this handler.
+  // Every upstream widget publish is synchronous, so a deferred clear runs after
+  // it on the same tick regardless of extension order.
   pi.on("agent_settled", async (_event, ctx) => {
     const current = upstream(branch(ctx));
     if (current?.enabled && current.latestPlanSource === "legacy_proposed_plan" && current.latestPlan
@@ -316,7 +375,8 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
       });
       persist({ artifact: { ...artifact, approved: true } });
     } catch (error) {
-      notify(ctx, error);
+      const message = error instanceof Error ? error.message : String(error);
+      notify(ctx, new Error(`${message} Nothing was implemented and the prompt was not delivered to the model; resume the planning session and choose implementation again (linked tasks are preserved there).`));
       return { action: "handled" };
     }
   });
@@ -329,7 +389,7 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
       const saved = state(ctx);
       const artifact = saved.artifact;
       if (!artifact?.approved || saved.failedPlan) return;
-      content = `Implementation has been approved for ${artifact.path}. FIRST use the existing todo tool to list tasks (includeDeleted:true), reuse tasks linked by the metadata below, and create only missing checklist tasks before implementing. Never clear/delete unrelated todos. Preserve exact subjects and ordinals, even when subjects repeat. Create uses pending; update already-finished tasks to completed after verifying them. Keep linked tasks in_progress/completed as work proceeds, and reopen them when work remains; their Markdown boxes sync automatically. Do not rewrite the plan file yourself.\n\n${JSON.stringify(checklist(artifact.plan).map((t, i) => ({ subject: t.subject, metadata: { piPlanFile: relative(artifact.root, artifact.path), piPlanTask: i + 1 } })), null, 2)}`;
+      content = `Implementation has been approved for ${artifact.path}. FIRST use the existing todo tool to list tasks (includeDeleted:true), reuse tasks linked by the metadata below, and create only missing checklist tasks before implementing. Never clear/delete unrelated todos. Preserve exact subjects and ordinals, even when subjects repeat. Create uses pending; update already-finished tasks to completed after verifying them. Keep linked tasks in_progress/completed as work proceeds. The todo tool forbids completed->pending/in_progress and never revives deleted tasks, so to resume one, delete the linked task, wait for its result, then create a replacement in a separate tool batch with the same exact subject and piPlanTask metadata; the companion re-links the same ordinal. Never call todo clear during implementation. Their Markdown boxes sync automatically. Do not rewrite the plan file yourself.\n\n${JSON.stringify(checklist(artifact.plan).map((t, i) => ({ subject: t.subject, metadata: { piPlanFile: relative(artifact.root, artifact.path), piPlanTask: i + 1 } })), null, 2)}`;
     }
     return { message: { customType: "plan-files-guidance", content, display: false } };
   });

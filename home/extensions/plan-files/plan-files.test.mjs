@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile, readdir, rm, symlink, realpath } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, readdir, rm, stat, symlink, realpath } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import { ENTRY_TYPE, checklist, handoffPlan, parentBranch, registerPlanFiles, savedState, withoutChecks } from "./plan-files.ts";
 
 const PLAN = "# Ship feature\n\nImplement carefully.\n\n- [ ] Add feature\n- [ ] Add tests";
@@ -79,6 +80,28 @@ function harness(cwd, { entries = [], sessionId = "session-one", parentSession }
 
 function linked(artifact, id, ordinal, status = "pending") {
   return { id, subject: checklist(artifact.plan)[ordinal - 1].subject, status, metadata: { piPlanFile: relative(artifact.root, artifact.path), piPlanTask: ordinal } };
+}
+
+// Loads the reducer actually shipped by the installed @juicesharp/rpiv-todo.
+// Node refuses to strip types under node_modules, so copy the four runtime
+// modules to a temp tree and rewrite their .js specifiers to .ts.
+async function installedReducer(t) {
+  const base = join(homedir(), ".pi", "agent", "npm", "node_modules", "@juicesharp", "rpiv-todo", "state");
+  try {
+    await stat(join(base, "state-reducer.ts"));
+  } catch {
+    t.skip("installed @juicesharp/rpiv-todo is not available");
+    return undefined;
+  }
+  const dir = await realpath(await mkdtemp(join(tmpdir(), "pi-rpiv-reducer-")));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  await mkdir(join(dir, "state"));
+  for (const name of ["state-reducer", "invariants", "task-graph", "state"]) {
+    const source = await readFile(join(base, `${name}.ts`), "utf8");
+    await writeFile(join(dir, "state", `${name}.ts`), source.replace(/from "(\.\/[\w-]+)\.js"/g, 'from "$1.ts"'));
+  }
+  const module = await import(pathToFileURL(join(dir, "state", "state-reducer.ts")).href);
+  return module.applyTaskMutation;
 }
 
 async function approved(t, plan = PLAN) {
@@ -243,7 +266,7 @@ test("only exact extension handoffs approve implementation, then inject first-cr
   }
 });
 
-test("successful mutated task alone syncs completion, errors, reopen and deletion", async (t) => {
+test("successful mutated task alone syncs completion, errors and deletion", async (t) => {
   const h = await approved(t);
   const a = h.artifact();
   const one = linked(a, 1, 1);
@@ -261,7 +284,7 @@ test("successful mutated task alone syncs completion, errors, reopen and deletio
   await h.todoResult({ action: "update", id: 1 }, [one, two], { details: { tasks: [one, two], error: "failed", nextId: 3 } });
   await h.todoResult({ action: "update", id: 1 }, [one, two], { isError: true });
   assert.equal((await readFile(a.path, "utf8")).match(/\[x\]/g).length, 2);
-  await h.todoResult({ action: "update", id: 1 }, [{ ...one, status: "in_progress" }, two]);
+  await h.todoResult({ action: "delete", id: 1 }, [{ ...one, status: "deleted" }, two]);
   assert.match(await readFile(a.path, "utf8"), /\[ \] Add feature/);
   assert.match(await readFile(a.path, "utf8"), /\[x\] Add tests/);
   await h.todoResult({ action: "delete", id: 2 }, [one, { ...two, status: "deleted" }]);
@@ -387,4 +410,112 @@ test("legacy completion saves after upstream agent_end and before its ready menu
   await h.emit("agent_end");
   await h.emit("agent_settled");
   assert.notEqual(h.artifact().path, first);
+});
+
+test("denied or aborted todo creates release their reservation for a same-turn retry", async (t) => {
+  const h = await approved(t, "# Retry\n- [ ] Same\n- [ ] Same");
+  const first = { action: "create", subject: "Same" };
+  await h.emit("tool_call", { toolName: "todo", toolCallId: "one", input: first });
+  assert.equal(first.metadata.piPlanTask, 1);
+  // A call denied before execution emits tool_execution_end but never tool_result.
+  await h.emit("tool_execution_end", { toolName: "todo", toolCallId: "one", isError: true, result: {} });
+  const retry = { action: "create", subject: "Same" };
+  assert.equal(await h.emit("tool_call", { toolName: "todo", toolCallId: "retry", input: retry }), undefined);
+  assert.equal(retry.metadata.piPlanTask, 1, "the released ordinal is reusable");
+});
+
+test("deleted linked tasks free their ordinal for a replacement after the turn ends", async (t) => {
+  const h = await approved(t, "# Reopen\n- [ ] Fix bug");
+  const a = h.artifact();
+  const first = { action: "create", subject: "Fix bug" };
+  await h.emit("tool_call", { toolName: "todo", toolCallId: "one", input: first });
+  await h.todoResult(first, [linked(a, 1, 1)], { toolCallId: "one" });
+  await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [] });
+  const remove = { action: "delete", id: 1 };
+  await h.emit("tool_call", { toolName: "todo", toolCallId: "delete", input: remove });
+  await h.todoResult(remove, [linked(a, 1, 1, "deleted")], { toolCallId: "delete" });
+  const again = { action: "create", subject: "Fix bug" };
+  assert.equal(await h.emit("tool_call", { toolName: "todo", toolCallId: "two", input: again }), undefined, "a deleted task must not block re-creation");
+  assert.equal(again.metadata.piPlanTask, 1);
+});
+
+test("todo clear is blocked during an approved linked implementation", async (t) => {
+  const h = await approved(t);
+  const result = await h.emit("tool_call", { toolName: "todo", toolCallId: "clear", input: { action: "clear" } });
+  assert.equal(result.block, true);
+  assert.match(result.reason, /Clear/i);
+});
+
+test("installed reducer semantics: reopening uses delete then replacement create", async (t) => {
+  const apply = await installedReducer(t);
+  if (!apply) return;
+  const h = await approved(t, "# Reopen\n- [ ] Fix bug");
+  const a = h.artifact();
+  let state = { tasks: [], nextId: 1 };
+  const run = async (input, toolCallId) => {
+    const blocked = await h.emit("tool_call", { toolName: "todo", toolCallId, input });
+    assert.equal(blocked, undefined, `unexpected block for ${JSON.stringify(input)}`);
+    const result = apply(state, input.action, input);
+    state = result.state;
+    const details = { action: input.action, params: input, tasks: state.tasks, nextId: state.nextId, ...(result.op.kind === "error" ? { error: result.op.message } : {}) };
+    await h.todoResult(input, state.tasks, { toolCallId, details });
+    await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [] });
+    return result.op;
+  };
+  const created = await run({ action: "create", subject: "Fix bug" }, "create-one");
+  assert.equal(created.kind, "create");
+  assert.equal(state.tasks.find((x) => x.id === created.taskId).metadata.piPlanTask, 1);
+  assert.equal((await run({ action: "update", id: created.taskId, status: "completed" }, "complete-one")).kind, "update");
+  assert.match(await readFile(a.path, "utf8"), /\[x\] Fix bug/);
+  assert.equal((await run({ action: "update", id: created.taskId, status: "in_progress" }, "reopen-one")).kind, "error");
+  assert.match(await readFile(a.path, "utf8"), /\[x\] Fix bug/, "an illegal reopen must not touch the box");
+  assert.equal((await run({ action: "delete", id: created.taskId }, "delete-one")).kind, "delete");
+  assert.match(await readFile(a.path, "utf8"), /\[ \] Fix bug/);
+  const replacement = await run({ action: "create", subject: "Fix bug" }, "create-two");
+  assert.equal(replacement.kind, "create");
+  assert.notEqual(replacement.taskId, created.taskId, "deleted tasks are replaced, not revived");
+  assert.equal(state.tasks.find((x) => x.id === replacement.taskId).metadata.piPlanTask, 1, "the replacement re-links the same ordinal");
+});
+
+test("revisions recreate a deleted plan file and directory at the same path", async (t) => {
+  const h = harness(await directory(t));
+  h.start();
+  await h.complete();
+  const a = h.artifact();
+  await rm(a.path);
+  await h.complete(PLAN.replace("carefully", "thoroughly"));
+  assert.equal(savedState(h.entries).failedPlan, undefined);
+  assert.equal(h.artifact().path, a.path);
+  assert.match(await readFile(a.path, "utf8"), /thoroughly/);
+  await rm(join(a.root, "docs"), { recursive: true, force: true });
+  await h.complete(PLAN.replace("carefully", "carefully and quickly"));
+  assert.equal(savedState(h.entries).failedPlan, undefined);
+  assert.equal(h.artifact().path, a.path);
+  assert.match(await readFile(a.path, "utf8"), /quickly/);
+});
+
+test("prose-only revisions keep manual ticks; checked checklist changes are refused", async (t) => {
+  const h = harness(await directory(t));
+  h.start();
+  await h.complete();
+  const a = h.artifact();
+  await writeFile(a.path, PLAN.replace("- [ ] Add feature", "- [x] Add feature") + "\n");
+  await h.complete(PLAN.replace("carefully", "thoroughly"));
+  assert.match(await readFile(a.path, "utf8"), /\[x\] Add feature/);
+  assert.match(await readFile(a.path, "utf8"), /thoroughly/);
+  await h.complete(PLAN.replace("Add tests", "Add docs"));
+  assert.match(h.notifications.at(-1).message, /checked/);
+  assert.match(await readFile(a.path, "utf8"), /\[x\] Add feature/);
+  assert.match(await readFile(a.path, "utf8"), /Add tests/);
+});
+
+test("failed handoffs stay blocked and report safe recovery without prefilling approval", async (t) => {
+  const h = harness(await directory(t));
+  h.start();
+  await h.complete();
+  h.upstream({ enabled: false });
+  const result = await h.emit("input", { source: "extension", text: handoff(`${PLAN}\n`) });
+  assert.equal(result.action, "handled");
+  assert.match(h.notifications.at(-1).message, /resume the planning session/);
+  assert.equal(h.artifact().approved, false);
 });
