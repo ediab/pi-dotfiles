@@ -227,6 +227,8 @@ function hidePlanningWidget(ctx: ExtensionContext) {
 export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
   // Reservations prevent parallel creates of identical subjects from sharing an ordinal.
   const reservations = new Map<string, Map<string, number>>();
+  // Plan paths already checked for a linked todo; one warning per session is enough.
+  const warned = new Set<string>();
   // Tool calls that produced a tool_result. Denied or aborted calls never do,
   // so tool_execution_end can release the reservation they leave behind.
   const resolvedCalls = new Set<string>();
@@ -344,8 +346,22 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
     for (const reserved of reservations.values()) reserved.delete(event.toolCallId);
   });
   // toolResults are persisted before turn_end; drop remaining reservations so a
-  // deleted or retried task can reuse its ordinal in later turns.
-  pi.on("turn_end", clearReservations);
+  // deleted or retried task can reuse its ordinal in later turns. The same
+  // boundary reports an approved plan whose linked tasks were never created,
+  // because nothing else would signal that its checkboxes cannot sync.
+  pi.on("turn_end", (event, ctx) => {
+    clearReservations();
+    const artifact = state(ctx).artifact;
+    if (!artifact?.approved || state(ctx).failedPlan || upstream(branch(ctx))?.enabled) return;
+    if (!Array.isArray(event.toolResults) || !event.toolResults.length) return;
+    const planFile = relative(artifact.root, artifact.path);
+    if (warned.has(planFile)) return;
+    warned.add(planFile);
+    const linked = branch(ctx).some((entry) => entry.type === "message" && entry.message.role === "toolResult" && entry.message.toolName === "todo" && !entry.message.isError
+      && record(entry.message.details) && Array.isArray(entry.message.details.tasks)
+      && entry.message.details.tasks.some((task) => record(task) && task.status !== "deleted" && record(task.metadata) && task.metadata.piPlanFile === planFile));
+    if (!linked) ctx.ui.notify(`Plan files: no todo is linked to ${planFile} yet, so its checkboxes will not sync. Ask the agent to create the plan tasks with the todo tool.`, "warning");
+  });
 
   // Global extensions load before npm packages: upstream accepts legacy plans at
   // agent_end, then shows its ready menu at agent_settled, after this handler.

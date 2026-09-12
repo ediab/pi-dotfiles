@@ -541,3 +541,43 @@ test("failed handoffs stay blocked and report safe recovery without prefilling a
   assert.match(h.notifications.at(-1).message, /resume the planning session/);
   assert.equal(h.artifact().approved, false);
 });
+
+test("an approved plan without linked todos warns once after the first working turn", async (t) => {
+  const h = await approved(t);
+  const a = h.artifact();
+  const warnings = () => h.notifications.filter((n) => n.level === "warning");
+  assert.equal(warnings().length, 0);
+  await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [] });
+  assert.equal(warnings().length, 0, "a turn without tool work is not proof of anything");
+  await h.emit("turn_end", { turnIndex: 1, message: {}, toolResults: [{ toolName: "read" }] });
+  assert.equal(warnings().length, 1);
+  assert.ok(warnings()[0].message.includes(relative(a.root, a.path)));
+  assert.match(warnings()[0].message, /no todo is linked/);
+  await h.emit("turn_end", { turnIndex: 2, message: {}, toolResults: [{ toolName: "read" }] });
+  assert.equal(warnings().length, 1, "one warning per session is enough");
+});
+
+test("a linked todo silences the warning for the rest of the session", async (t) => {
+  const h = await approved(t);
+  const a = h.artifact();
+  const warnings = () => h.notifications.filter((n) => n.level === "warning");
+  await h.todoResult({ action: "create", subject: "Add feature" }, [linked(a, 1, 1)]);
+  await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [{ toolName: "todo" }] });
+  assert.equal(warnings().length, 0);
+  await h.todoResult({ action: "delete", id: 1 }, [linked(a, 1, 1, "deleted")]);
+  await h.emit("turn_end", { turnIndex: 1, message: {}, toolResults: [{ toolName: "todo" }] });
+  assert.equal(warnings().length, 0, "the check already succeeded; later deletions do not reopen it");
+});
+
+test("unapproved sessions and re-entered plan mode never warn about links", async (t) => {
+  const h = harness(await directory(t));
+  const warnings = () => h.notifications.filter((n) => n.level === "warning");
+  h.start();
+  await h.complete();
+  await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [{ toolName: "read" }] });
+  assert.equal(warnings().length, 0, "an unapproved plan is not an implementation");
+  await h.approve();
+  h.start();
+  await h.emit("turn_end", { turnIndex: 0, message: {}, toolResults: [{ toolName: "read" }] });
+  assert.equal(warnings().length, 0, "plan-mode turns are not implementation turns");
+});
