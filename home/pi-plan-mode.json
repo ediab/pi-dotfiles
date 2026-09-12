@@ -23,6 +23,5 @@
     "todo",
     "web_search"
   ],
-  "implementationPlanRetention": "clear-after-first-run",
-  "toggleShortcut": "tab"
+  "implementationPlanRetention": "clear-after-first-run"
 }
