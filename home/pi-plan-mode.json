@@ -20,7 +20,6 @@
     "source_check",
     "steer_subagent",
     "SubagentWorkflow",
-    "todo",
     "web_search"
   ],
   "implementationPlanRetention": "clear-after-first-run"
