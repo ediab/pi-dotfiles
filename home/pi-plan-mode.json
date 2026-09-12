@@ -1,0 +1,27 @@
+{
+  "defaultPlanTools": [
+    "powershell",
+    "advisor",
+    "Agent",
+    "ask_user_question",
+    "bash",
+    "fetch_content",
+    "fffind",
+    "ffgrep",
+    "find",
+    "get_search_content",
+    "get_subagent_result",
+    "grep",
+    "ls",
+    "mcp",
+    "mcpScript",
+    "read",
+    "recall",
+    "source_check",
+    "steer_subagent",
+    "SubagentWorkflow",
+    "todo",
+    "web_search"
+  ],
+  "implementationPlanRetention": "clear-after-first-run"
+}

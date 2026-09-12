@@ -4,7 +4,7 @@
 # New machine? Use bootstrap.sh instead.
 #   rebuild.sh              → full: pi update --all + settings.json + all bundled config
 #   rebuild.sh --sync-only  → bundled config only (skills, extensions, agents, models,
-#                             subagents, web-search, prompts); skips the package
+#                             subagents, web-search, plan-mode, prompts); skips the package
 #                             update and the settings.json copy — for skill/extension edits
 set -euo pipefail
 
@@ -97,6 +97,11 @@ cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
 # the old ~/.pi/web-search.json is ignored unless XDG_CONFIG_HOME is set.
 cp "$SCRIPT_DIR/home/web-search.json" "$HOME/.pi/agent/web-search.json" \
   && echo "    web-search.json  re-synced"
+
+# Plan-mode package settings (plan tool allowlist, approved-plan retention).
+# pi-plan-mode only creates this file on an explicit Settings save, so the repo copy is the source of truth.
+cp "$SCRIPT_DIR/home/pi-plan-mode.json" "$HOME/.pi/agent/pi-plan-mode.json" \
+  && echo "    pi-plan-mode.json  re-synced"
 
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
