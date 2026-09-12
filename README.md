@@ -26,6 +26,10 @@ Running the bootstrap installs:
 - **Ponytail default** — `home/ponytail.json` deployed to `~/.config/ponytail/config.json`
   (`defaultMode: off`, so ponytail is on-demand via `/ponytail full`). This is the same file
   pi's `/ponytail default` command writes.
+- **CC Safety Net policy** — `home/cc-safety-net-policy.json` deployed to
+  `~/.cc-safety-net/policy.json` (0700 dir, 0600 file). Turns off `secret.cli.pi` so Pi
+  may read its own `auth.json`; every other destructive-command and secret rule stays on.
+  This is the same file `cc-safety-net policy apply <file> --global` writes.
 - **Custom models** — `home/models.json` deployed to `~/.pi/agent/models.json`
   (provider + model defs).
 - **Prompt templates** — every `.md` under `home/prompts/`, copied to `~/.pi/agent/prompts/`.
@@ -95,7 +99,7 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 | What | Direction | How |
 |---|---|---|
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
-| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
+| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json`, `home/cc-safety-net-policy.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
 | `auth.json`, `mcp.json`, `models-store.json`, `zentui.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design (`deploy-vps.sh` still mirrors the last two onto the VPS) |
 
@@ -141,6 +145,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `home/prompts/` -> `~/.pi/agent/prompts/`,
   `home/web-search.json` -> `~/.pi/agent/web-search.json`,
   `home/ponytail.json` -> `~/.config/ponytail/config.json` (ponytail's own config dir, not pi's),
+  `home/cc-safety-net-policy.json` -> `~/.cc-safety-net/policy.json` (CC Safety Net's own
+  config dir, not pi's),
   `home/AGENTS.md` -> `~/.pi/agent/AGENTS.md`.
   Editing a file here is editing your deployed config.
 - `bootstrap.sh` — fresh-machine setup. Run once.
