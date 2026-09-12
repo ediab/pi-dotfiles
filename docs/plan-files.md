@@ -24,6 +24,21 @@ Task metadata uses `piPlanFile` (repository-relative path) and `piPlanTask` (one
 - If a handoff is rejected, the companion blocks it, keeps the saved plan unapproved, and tells you to resume the source planning session. Upstream may still report that a fresh implementation session started: that success notice is not proof the kickoff reached the model, because returning `handled` makes the upstream `sendUserMessage` resolve. Only implement after the companion has approved the handoff.
 - Live todo creation is agent-driven, not an atomic bulk operation. The companion supplies instructions, metadata injection, and duplicate-link protection, but it cannot force the model to create the linked tasks. Treat agent-driven creation as best-effort and use `/todos` to confirm before work starts.
 
+## Divergences from Codex plan mode
+
+The contract text and the handoff flow are ported from Codex CLI's plan mode (`codex-rs/collaboration-mode-templates/templates/plan.md`, `handlers/plan.rs`, `plan_implementation.rs`), including the `<proposed_plan>` parser and the fresh-session prompt. These differences are deliberate:
+
+| Codex CLI | Here | Why |
+| --- | --- | --- |
+| The plan is prose inside a `<proposed_plan>` block that the runtime strips and streams | `plan_mode_complete` tool call | A tool result is a gate the companion can verify before approving implementation; the `<proposed_plan>` parser remains as a legacy fallback for models that ignore the tool |
+| No plan persistence: the plan lives only in the thread ([openai/codex#19125](https://github.com/openai/codex/issues/19125)) | Saved to `<git-root>/docs/plans/*.md` before the review menu | Durability, plus a stable path for the checkbox link |
+| Read-only is prompt-enforced; only the checklist tool is hard-rejected, and violations are reported ([openai/codex#32594](https://github.com/openai/codex/issues/32594)) | Runtime tool allowlist plus a shell inspector with per-command argument validators | Same intent, enforced rather than requested |
+| `request_user_input` is registered per mode, so tool schemas change on a mode switch | Schemas stay stable; only the runtime policy changes | Keeps the prompt cache intact across transitions |
+| Checklist state is in-memory (`update_plan` / `EventMsg::PlanUpdate`); nothing maps to Markdown | Linked `todo` tasks tick the Markdown checkboxes in the saved plan | Progress has to outlive the session |
+| 2–3 mutually exclusive question options | 1–3 questions with 2–4 options | Pi's `ask_user_question` schema, which appends its own free-text row |
+
+Not adopted from Codex: the medium reasoning preset for plan mode (`thinkingLevel` stays `inherit`), and step-size discipline for the checklist tool, which `@juicesharp/rpiv-todo` already ships as prompt guidelines.
+
 ## Validation
 
 ```sh
