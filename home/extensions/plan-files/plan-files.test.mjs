@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
-import { ENTRY_TYPE, checklist, handoffPlan, parentBranch, registerPlanFiles, savedState, withoutChecks } from "./plan-files.ts";
+import { ENTRY_TYPE, UPSTREAM_PLANNING_WIDGET_KEY, checklist, handoffPlan, parentBranch, registerPlanFiles, savedState, withoutChecks } from "./plan-files.ts";
 
 const PLAN = "# Ship feature\n\nImplement carefully.\n\n- [ ] Add feature\n- [ ] Add tests";
 const handoff = (plan = PLAN) => `Plan mode is now disabled. Full tool access is restored. Implement this proposed plan now:\n\n${plan}`;
@@ -33,9 +33,13 @@ function harness(cwd, { entries = [], sessionId = "session-one", parentSession }
     on(name, handler) { handlers.set(name, [...(handlers.get(name) ?? []), handler]); },
     appendEntry(customType, data) { append({ type: "custom", customType, data }); },
   };
+  const widgets = [];
   const ctx = {
     cwd,
-    ui: { notify(message, level) { notifications.push({ message, level }); } },
+    ui: {
+      notify(message, level) { notifications.push({ message, level }); },
+      setWidget(key, content) { widgets.push({ key, content }); },
+    },
     sessionManager: {
       getBranch: () => entries,
       getSessionId: () => sessionId,
@@ -75,7 +79,8 @@ function harness(cwd, { entries = [], sessionId = "session-one", parentSession }
     await emit("tool_result", event);
     append({ type: "message", message: { role: "toolResult", toolName: "todo", details: event.details, isError: event.isError } });
   };
-  return { pi, ctx, entries, append, emit, load, start, complete, artifact, upstream, approve, todoResult, notifications, queued };
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+  return { pi, ctx, entries, append, emit, load, start, complete, artifact, upstream, approve, todoResult, notifications, queued, widgets, flush };
 }
 
 function linked(artifact, id, ordinal, status = "pending") {
@@ -120,6 +125,23 @@ test("checklist ignores fenced examples and preserves duplicate ordinals and exa
   assert.deepEqual(tasks.map((t) => plan[t.position]), [" ", "X", " "]);
   assert.ok(withoutChecks(plan).includes("1. [ ] Same"));
   assert.ok(withoutChecks(plan).includes("- [x] Example"));
+});
+
+test("planning widget is hidden after lifecycle events while plan flow is unaffected", async (t) => {
+  const h = harness(await directory(t));
+  const published = ["Plan mode: planning", "Plan policy allows: read.", "Finish with plan_mode_complete when decision-ready."];
+  for (const event of ["session_start", "before_agent_start", "agent_end"]) {
+    // Upstream publishes synchronously on the event; global extensions run
+    // first, so the deferred clear lands after its publish on the same tick.
+    const pending = h.emit(event);
+    h.ctx.ui.setWidget(UPSTREAM_PLANNING_WIDGET_KEY, published);
+    await pending;
+    await h.flush();
+    assert.deepEqual(h.widgets.at(-1), { key: UPSTREAM_PLANNING_WIDGET_KEY, content: undefined });
+  }
+  h.start();
+  await h.complete();
+  assert.match(await readFile(h.artifact().path, "utf8"), /Ship feature/);
 });
 
 test("completion saves at repo root before review, without live tasks before approval", async (t) => {

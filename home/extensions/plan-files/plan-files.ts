@@ -213,6 +213,17 @@ export async function parentBranch(path: string): Promise<Entry[]> {
   return branch;
 }
 
+function hidePlanningWidget(ctx: ExtensionContext) {
+  // Deferred past the current tick so it lands after upstream's synchronous
+  // setWidget publish on the same event; unref'd to never hold shutdown open.
+  // Upstream only renders the widget in planning/ready states and clears it
+  // itself on shutdown, so an uncleared extra tick is at most a transient flash.
+  const timer = setTimeout(() => {
+    try { ctx.ui.setWidget(UPSTREAM_PLANNING_WIDGET_KEY, undefined); } catch { /* UI gone; nothing to hide */ }
+  }, 0);
+  (timer as unknown as { unref?: () => void }).unref?.();
+}
+
 export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
   // Reservations prevent parallel creates of identical subjects from sharing an ordinal.
   const reservations = new Map<string, Map<string, number>>();
@@ -381,7 +392,12 @@ export function registerPlanFiles(pi: ExtensionAPI, queue: Queue) {
     }
   });
 
+  // Upstream publishes the banner synchronously on this event (before the
+  // companion in load order); the deferred clear lands after it on the tick.
+  pi.on("agent_end", (_event, ctx) => { hidePlanningWidget(ctx); });
+
   pi.on("before_agent_start", (_event, ctx) => {
+    hidePlanningWidget(ctx);
     let content: string;
     if (upstream(branch(ctx))?.enabled) {
       content = "Plan-files contract: do not create or update live todos during Plan mode. Finish with plan_mode_complete containing a nonempty Markdown task checklist (- [ ] Subject), outside code fences. Use short, exact task subjects. The companion saves this plan before review; only implementation approval activates live tasks.";
