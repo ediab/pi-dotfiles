@@ -13,11 +13,11 @@ ssh "$VPS_HOST" 'cp ~/.pi/agent/settings.json ~/.pi/agent/settings.json.pre-depl
 rsync -az "$PI_DIR/settings.json" "$VPS_HOST:~/.pi/agent/settings.json"
 rsync -az "$PI_DIR/auth.json" "$VPS_HOST:~/.pi/agent/auth.json"
 ssh "$VPS_HOST" 'chmod 600 ~/.pi/agent/auth.json'
-# Ponytail default mode (off = on-demand via /ponytail full). Push local config so VPS matches.
-if [ -f "$HOME/.config/ponytail/config.json" ]; then
-  ssh "$VPS_HOST" 'mkdir -p ~/.config/ponytail'
-  rsync -az "$HOME/.config/ponytail/config.json" "$VPS_HOST:~/.config/ponytail/config.json"
-fi
+# Ponytail default mode (off = on-demand via /ponytail full). Deploys the repo copy
+# so fresh machines get the same default; mirrors it as the live file (the same
+# file Pi's /ponytail default command writes).
+ssh "$VPS_HOST" 'mkdir -p ~/.config/ponytail'
+rsync -az "$REPO_DIR/home/ponytail.json" "$VPS_HOST:~/.config/ponytail/config.json"
 
 echo "==> 2/4  skills + prompts + agents + AGENTS.md + configs"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"

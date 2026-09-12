@@ -113,4 +113,14 @@ for src in "$SCRIPT_DIR/home/prompts/"*.md; do
 done
 shopt -u nullglob
 
+# Ponytail default mode (off = on-demand via /ponytail full).
+# Repo copy is the source of truth — matches the live file written by
+# Pi's /ponytail default command (~/.config/ponytail/config.json).
+# diff first so rebuild --sync-only stays quiet when nothing changed.
+if ! diff -q "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" &>/dev/null; then
+  mkdir -p "$HOME/.config/ponytail"
+  cp "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" \
+    && echo "    ponytail.json  re-synced (defaultMode off)"
+fi
+
 echo "==> done."

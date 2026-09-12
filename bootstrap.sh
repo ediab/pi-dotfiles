@@ -77,7 +77,7 @@ for pkg in "${APT_PACKAGES[@]}"; do
   fi
 done
 
-echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
+echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed + ponytail default"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
 for src in "$SCRIPT_DIR/home/skills"/*/; do
@@ -130,6 +130,13 @@ for src in "$SCRIPT_DIR/home/prompts/"*.md; do
   echo "    $(basename "$src")  installed"
 done
 shopt -u nullglob
+
+# Ponytail default mode (off = on-demand via /ponytail full).
+# Repo copy is the source of truth; Pi's /ponytail default command also writes
+# ~/.config/ponytail/config.json on this machine.
+mkdir -p "$HOME/.config/ponytail"
+cp "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" \
+  && echo "    ponytail.json  installed (defaultMode off)"
 
 # Seed ~/.pi/agent/AGENTS.md from the sanitized repo copy. Only when absent — never clobber
 # local-only sections like VPS access details.
