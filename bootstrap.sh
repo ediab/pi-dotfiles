@@ -77,7 +77,7 @@ for pkg in "${APT_PACKAGES[@]}"; do
   fi
 done
 
-echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed"
+echo "==> 3/4  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total) + AGENTS.md seed + ponytail default"
 mkdir -p "$PI_SKILLS_DIR"
 shopt -s nullglob
 for src in "$SCRIPT_DIR/home/skills"/*/; do
@@ -121,6 +121,16 @@ cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
 cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
   && echo "    subagents.json  installed"
 
+# Zentui TUI config (custom editor off = pi-plan-build owns the composer).
+# Repo copy is the source of truth.
+cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
+  && echo "    zentui.json  installed"
+
+# pi-plan-build config (alt+m toggles the mode; plan title hidden).
+# Repo copy is the source of truth; the package rewrites this file on shortcut changes.
+cp "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" \
+  && echo "    pi-plan-build.json  installed"
+
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
 mkdir -p "$PI_PROMPTS_DIR"
@@ -130,6 +140,22 @@ for src in "$SCRIPT_DIR/home/prompts/"*.md; do
   echo "    $(basename "$src")  installed"
 done
 shopt -u nullglob
+
+# Ponytail default mode (off = on-demand via /ponytail full).
+# Repo copy is the source of truth; Pi's /ponytail default command also writes
+# ~/.config/ponytail/config.json on this machine.
+mkdir -p "$HOME/.config/ponytail"
+cp "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" \
+  && echo "    ponytail.json  installed (defaultMode off)"
+
+# CC Safety Net user policy (secret.cli.pi off = Pi may read its own auth.json).
+# Repo copy is the source of truth — matches the live file (0700 dir, 0600 file,
+# written by `cc-safety-net policy apply <file> --global`).
+mkdir -p "$HOME/.cc-safety-net"
+chmod 700 "$HOME/.cc-safety-net"
+cp "$SCRIPT_DIR/home/cc-safety-net-policy.json" "$HOME/.cc-safety-net/policy.json" \
+  && chmod 600 "$HOME/.cc-safety-net/policy.json" \
+  && echo "    cc-safety-net-policy.json  installed"
 
 # Seed ~/.pi/agent/AGENTS.md from the sanitized repo copy. Only when absent — never clobber
 # local-only sections like VPS access details.

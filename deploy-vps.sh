@@ -38,11 +38,17 @@ PY
     rm -f /tmp/vps-package-exclude.txt
 REMOTE
 fi
-# Ponytail default mode (off = on-demand via /ponytail full). Push local config so VPS matches.
-if [ -f "$HOME/.config/ponytail/config.json" ]; then
-  ssh "$VPS_HOST" 'mkdir -p ~/.config/ponytail'
-  rsync -az "$HOME/.config/ponytail/config.json" "$VPS_HOST:~/.config/ponytail/config.json"
-fi
+# Ponytail default mode (off = on-demand via /ponytail full). Deploys the repo copy
+# so fresh machines get the same default; mirrors it as the live file (the same
+# file Pi's /ponytail default command writes).
+ssh "$VPS_HOST" 'mkdir -p ~/.config/ponytail'
+rsync -az "$REPO_DIR/home/ponytail.json" "$VPS_HOST:~/.config/ponytail/config.json"
+
+# CC Safety Net user policy (secret.cli.pi off = Pi may read its own auth.json).
+# Deploys the repo copy so the VPS stops blocking Pi's own auth.json the same way.
+ssh "$VPS_HOST" 'mkdir -p ~/.cc-safety-net && chmod 700 ~/.cc-safety-net'
+rsync -az "$REPO_DIR/home/cc-safety-net-policy.json" "$VPS_HOST:~/.cc-safety-net/policy.json"
+ssh "$VPS_HOST" 'chmod 600 ~/.cc-safety-net/policy.json'
 
 echo "==> 2/4  skills + prompts + agents + AGENTS.md + configs"
 rsync -az --delete "$REPO_DIR/home/skills/" "$VPS_HOST:~/.pi/agent/skills/"
@@ -55,12 +61,15 @@ ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, s
 # leftovers from packages that are no longer installed anywhere
 ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty ~/.pi/agent/intercom; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
 
-# Per-machine package configs: not versioned in the repo, but mirrored so the VPS behaves the same.
-for cfg in zentui.json code-previews.json; do
-  if [ -f "$PI_DIR/$cfg" ]; then
-    rsync -az "$PI_DIR/$cfg" "$VPS_HOST:~/.pi/agent/$cfg"
-  fi
-done
+# Versioned package configs: the repo is the source of truth, so the VPS gets the same
+# files bootstrap.sh / rebuild.sh deploy locally.
+rsync -az "$REPO_DIR/home/zentui.json" "$VPS_HOST:~/.pi/agent/zentui.json"
+rsync -az "$REPO_DIR/home/pi-plan-build.json" "$VPS_HOST:~/.pi/agent/pi-plan-build.json"
+
+# code-previews.json is per-machine (local paths and state) — mirrored, not versioned.
+if [ -f "$PI_DIR/code-previews.json" ]; then
+  rsync -az "$PI_DIR/code-previews.json" "$VPS_HOST:~/.pi/agent/code-previews.json"
+fi
 
 # web-search.json: same routing/preferences as local, but the TinyFish key comes from a 0600
 # file on the VPS instead of the macOS Keychain (Linux has no `security`). The key is pulled

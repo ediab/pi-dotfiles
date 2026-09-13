@@ -4,7 +4,7 @@
 # New machine? Use bootstrap.sh instead.
 #   rebuild.sh              → full: pi update --all + settings.json + all bundled config
 #   rebuild.sh --sync-only  → bundled config only (skills, extensions, agents, models,
-#                             subagents, web-search, plan-mode, prompts); skips the package
+#                             subagents, web-search, prompts); skips the package
 #                             update and the settings.json copy — for skill/extension edits
 set -euo pipefail
 
@@ -131,10 +131,19 @@ cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
 cp "$SCRIPT_DIR/home/web-search.json" "$HOME/.pi/agent/web-search.json" \
   && echo "    web-search.json  re-synced"
 
-# Plan-mode package settings (plan tool allowlist, approved-plan retention).
-# pi-plan-mode only creates this file on an explicit Settings save, so the repo copy is the source of truth.
-cp "$SCRIPT_DIR/home/pi-plan-mode.json" "$HOME/.pi/agent/pi-plan-mode.json" \
-  && echo "    pi-plan-mode.json  re-synced"
+# Zentui TUI config (custom editor off = pi-plan-build owns the composer;
+# footer/theme and all other components stay as configured).
+# Repo copy is the source of truth.
+cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
+  && echo "    zentui.json  re-synced"
+
+# pi-plan-build config (alt+m toggles the mode; plan title hidden).
+# Repo copy is the source of truth — the package rewrites this file when its shortcuts
+# change. diff first so rebuild --sync-only stays quiet when nothing changed.
+if ! diff -q "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" &>/dev/null; then
+  cp "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" \
+    && echo "    pi-plan-build.json  re-synced (alt+m toggle, showPlanTitle off)"
+fi
 
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
@@ -145,5 +154,27 @@ for src in "$SCRIPT_DIR/home/prompts/"*.md; do
   echo "    $(basename "$src")  re-synced"
 done
 shopt -u nullglob
+
+# Ponytail default mode (off = on-demand via /ponytail full).
+# Repo copy is the source of truth — matches the live file written by
+# Pi's /ponytail default command (~/.config/ponytail/config.json).
+# diff first so rebuild --sync-only stays quiet when nothing changed.
+if ! diff -q "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" &>/dev/null; then
+  mkdir -p "$HOME/.config/ponytail"
+  cp "$SCRIPT_DIR/home/ponytail.json" "$HOME/.config/ponytail/config.json" \
+    && echo "    ponytail.json  re-synced (defaultMode off)"
+fi
+
+# CC Safety Net user policy (secret.cli.pi off = Pi may read its own auth.json).
+# Repo copy is the source of truth — matches the live file (0700 dir, 0600 file,
+# written by `cc-safety-net policy apply <file> --global`).
+# diff first so rebuild --sync-only stays quiet when nothing changed.
+if ! diff -q "$SCRIPT_DIR/home/cc-safety-net-policy.json" "$HOME/.cc-safety-net/policy.json" &>/dev/null; then
+  mkdir -p "$HOME/.cc-safety-net"
+  chmod 700 "$HOME/.cc-safety-net"
+  cp "$SCRIPT_DIR/home/cc-safety-net-policy.json" "$HOME/.cc-safety-net/policy.json" \
+    && chmod 600 "$HOME/.cc-safety-net/policy.json" \
+    && echo "    cc-safety-net-policy.json  re-synced (secret.cli.pi off)"
+fi
 
 echo "==> done."

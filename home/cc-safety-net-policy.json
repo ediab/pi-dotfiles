@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "secret_protection": {
+    "overrides": {
+      "secret.cli.pi": "off"
+    }
+  }
+}

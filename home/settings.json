@@ -3,7 +3,7 @@
   "theme": "terminal",
   "defaultProvider": "deepseek",
   "defaultModel": "deepseek-v4-flash",
-  "defaultThinkingLevel": "xhigh",
+  "defaultThinkingLevel": "high",
   "tuiMode": "fullscreen",
   "packages": [
     "npm:pi-web-access",
@@ -22,7 +22,8 @@
     "npm:pi-updater",
     "npm:@juicesharp/rpiv-advisor",
     "npm:cc-safety-net",
-    "npm:@narumitw/pi-plan-mode@0.58.0"
+    "git:github.com/earendil-works/pi-review",
+    "npm:@janvitos/pi-plan-build"
   ],
   "skills": [
     "!**/.agents/skills/use-tinyfish"
