@@ -65,7 +65,7 @@
             "gitCommit": true,
             "gitMetrics": true,
             "runtime": false,
-            "modelInfo": true,
+            "modelInfo": false,
             "context": true,
             "tokens": false,
             "cost": true,
