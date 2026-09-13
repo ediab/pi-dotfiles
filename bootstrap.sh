@@ -121,6 +121,11 @@ cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
 cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
   && echo "    subagents.json  installed"
 
+# Zentui TUI config (custom editor off = pi-plan-build owns the composer).
+# Repo copy is the source of truth.
+cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
+  && echo "    zentui.json  installed"
+
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
 mkdir -p "$PI_PROMPTS_DIR"
