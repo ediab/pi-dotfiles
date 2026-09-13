@@ -22,7 +22,7 @@
     "npm:pi-updater",
     "npm:@juicesharp/rpiv-advisor",
     "npm:cc-safety-net",
-    "npm:@narumitw/pi-plan-mode@0.58.0"
+    "npm:@narumitw/pi-plan-mode"
   ],
   "skills": [
     "!**/.agents/skills/use-tinyfish"
