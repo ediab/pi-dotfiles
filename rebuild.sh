@@ -104,6 +104,14 @@ cp "$SCRIPT_DIR/home/web-search.json" "$HOME/.pi/agent/web-search.json" \
 cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
   && echo "    zentui.json  re-synced"
 
+# pi-plan-build config (alt+m toggles the mode; plan title hidden).
+# Repo copy is the source of truth — the package rewrites this file when its shortcuts
+# change. diff first so rebuild --sync-only stays quiet when nothing changed.
+if ! diff -q "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" &>/dev/null; then
+  cp "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" \
+    && echo "    pi-plan-build.json  re-synced (alt+m toggle, showPlanTitle off)"
+fi
+
 # Prompt templates: every .md in home/prompts/ → ~/.pi/agent/prompts/. Add/remove by file; no script edit needed.
 PI_PROMPTS_DIR="$HOME/.pi/agent/prompts"
 mkdir -p "$PI_PROMPTS_DIR"

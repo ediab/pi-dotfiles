@@ -23,6 +23,11 @@ Running the bootstrap installs:
   (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
   (`backgroundByDefault`, `reportUsage`, `showCost`).
+- **Zentui TUI config** — `home/zentui.json` deployed to `~/.pi/agent/zentui.json`. The custom
+  editor is off so `pi-plan-build` owns the composer; footer, theme, and the other components
+  stay as configured.
+- **Plan-build config** — `home/pi-plan-build.json` deployed to `~/.pi/agent/pi-plan-build.json`
+  (`alt+m` toggles the mode; the plan title is hidden).
 - **Ponytail default** — `home/ponytail.json` deployed to `~/.config/ponytail/config.json`
   (`defaultMode: off`, so ponytail is on-demand via `/ponytail full`). This is the same file
   pi's `/ponytail default` command writes.
@@ -54,8 +59,6 @@ Running the bootstrap installs:
   `./rebuild.sh` push an older copy over a newer one, and the file no-ops unless
   `HERDR_ENV=1` anyway — so the repo leaves it to Herdr. The `herdr` skill alone does not
   install it.
-- The `use-tinyfish` skill in `~/.pi/agent/skills/` — `tinyfish connect` writes it, so it is
-  CLI-managed and deliberately not mirrored into `home/skills/`
 
 ## Fresh-machine setup
 
@@ -116,9 +119,9 @@ its own pinned review model that the main agent delegates to mid-task.
 | What | Direction | How |
 |---|---|---|
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
-| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json`, `home/cc-safety-net-policy.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
+| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json`, `home/cc-safety-net-policy.json`, `home/zentui.json`, `home/pi-plan-build.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
-| `auth.json`, `mcp.json`, `models-store.json`, `zentui.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design (`deploy-vps.sh` still mirrors the last two onto the VPS) |
+| `auth.json`, `mcp.json`, `models-store.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design (`deploy-vps.sh` still mirrors `code-previews.json` onto the VPS) |
 
 Bottom line: your settings reflect into the repo by themselves; the repo is the source of
 truth for skills, extensions, and the base `settings.json` that gets deployed to new machines.
@@ -140,8 +143,11 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   codex/opencode — and pi scans that dir too, so the same skill loaded twice and pi opened
   with a `[Skill conflict]` warning. The `!` glob hides the shared copy from pi (`~` is not
   expanded in these patterns, so the glob form is required); drop it if you don't use TinyFish.
-  The pi-side copy in `~/.pi/agent/skills/use-tinyfish/` is written by `tinyfish connect` and
-  therefore is not mirrored into `home/skills/` — re-run that command to refresh it.
+  The pi-side copy in `~/.pi/agent/skills/use-tinyfish/` is mirrored into
+  `home/skills/use-tinyfish/` and deployed like any other skill. `tinyfish connect` rewrites the
+  live copy when TinyFish updates, so copy it back
+  (`cp ~/.pi/agent/skills/use-tinyfish/SKILL.md ~/Dev/pi-dotfiles/home/skills/use-tinyfish/`)
+  before the next `./rebuild.sh`, which would otherwise push the older snapshot over it.
 
 **Heads-up:**
 
@@ -161,6 +167,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `home/models.json` -> `~/.pi/agent/models.json`,
   `home/prompts/` -> `~/.pi/agent/prompts/`,
   `home/web-search.json` -> `~/.pi/agent/web-search.json`,
+  `home/zentui.json` -> `~/.pi/agent/zentui.json`,
+  `home/pi-plan-build.json` -> `~/.pi/agent/pi-plan-build.json`,
   `home/ponytail.json` -> `~/.config/ponytail/config.json` (ponytail's own config dir, not pi's),
   `home/cc-safety-net-policy.json` -> `~/.cc-safety-net/policy.json` (CC Safety Net's own
   config dir, not pi's),

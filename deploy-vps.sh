@@ -36,12 +36,15 @@ ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, s
 # leftovers from packages that are no longer installed anywhere
 ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty ~/.pi/agent/intercom; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
 
-# Per-machine package configs: not versioned in the repo, but mirrored so the VPS behaves the same.
-for cfg in zentui.json code-previews.json; do
-  if [ -f "$PI_DIR/$cfg" ]; then
-    rsync -az "$PI_DIR/$cfg" "$VPS_HOST:~/.pi/agent/$cfg"
-  fi
-done
+# Versioned package configs: the repo is the source of truth, so the VPS gets the same
+# files bootstrap.sh / rebuild.sh deploy locally.
+rsync -az "$REPO_DIR/home/zentui.json" "$VPS_HOST:~/.pi/agent/zentui.json"
+rsync -az "$REPO_DIR/home/pi-plan-build.json" "$VPS_HOST:~/.pi/agent/pi-plan-build.json"
+
+# code-previews.json is per-machine (local paths and state) — mirrored, not versioned.
+if [ -f "$PI_DIR/code-previews.json" ]; then
+  rsync -az "$PI_DIR/code-previews.json" "$VPS_HOST:~/.pi/agent/code-previews.json"
+fi
 
 # web-search.json: same routing/preferences as local, but the TinyFish key comes from a 0600
 # file on the VPS instead of the macOS Keychain (Linux has no `security`). The key is pulled

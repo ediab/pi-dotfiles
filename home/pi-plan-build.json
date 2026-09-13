@@ -1,0 +1,9 @@
+{
+  "shortcuts": {
+    "toggleMode": [
+      "alt+m"
+    ],
+    "toggleModeInEditor": []
+  },
+  "showPlanTitle": false
+}
