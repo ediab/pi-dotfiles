@@ -22,7 +22,8 @@
     "npm:pi-updater",
     "npm:@juicesharp/rpiv-advisor",
     "npm:cc-safety-net",
-    "npm:@narumitw/pi-plan-mode"
+    "npm:@narumitw/pi-plan-mode",
+    "git:github.com/earendil-works/pi-review"
   ],
   "skills": [
     "!**/.agents/skills/use-tinyfish"
