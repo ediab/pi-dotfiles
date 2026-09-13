@@ -94,6 +94,23 @@ That's `pi update --all` plus a re-sync of `home/skills/`, `home/extensions/`,
 `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`,
 `home/web-search.json`, `home/settings.json` into `~/.pi/agent/`.
 
+### Code review
+
+`pi-review` (from the `packages` list) adds two commands:
+
+- `/review` — review uncommitted changes, a base branch, a commit, a GitHub PR (checked out
+  locally with `gh`), or a folder snapshot. Reports prioritized findings plus a verdict, and
+  separates feedback for the agent from callouts for the human.
+- `/end-review` — close an active review session: return only, return and summarize, or
+  return and queue the fixing work.
+
+A `REVIEW_GUIDELINES.md` beside the project's `.pi/` directory is appended to the review
+prompt, so a repo carries its own review rules without touching this harness.
+
+`home/agents/reviewer.md` is the complementary path, not a duplicate: `/review` runs the
+review in the current session, while `reviewer` is a fresh-context, report-only subagent on
+its own pinned review model that the main agent delegates to mid-task.
+
 ### Keeping the repo in sync
 
 | What | Direction | How |
