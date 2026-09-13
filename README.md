@@ -22,7 +22,7 @@ Running the bootstrap installs:
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
   (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
-  (default max turns, strict agent files).
+  (`backgroundByDefault`, `reportUsage`, `showCost`).
 - **Ponytail default** — `home/ponytail.json` deployed to `~/.config/ponytail/config.json`
   (`defaultMode: off`, so ponytail is on-demand via `/ponytail full`). This is the same file
   pi's `/ponytail default` command writes.
@@ -178,7 +178,7 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   package configs (`zentui.json`, `code-previews.json`), a Linux variant of `web-search.json`
   plus its key file, then reconciles installed packages against the canonical list.
   `mcp.json` stays per-machine (its `youtube-music` server runs a local macOS node build).
-- `docs/plans/`, `CONCEPTS.md`, `HANDOFF.md` — archival notes and planning records, kept
+- `docs/plans/`, `docs/solutions/`, `CONCEPTS.md` — archival notes and planning records, kept
   **local-only** and gitignored (not canonical config; find them in git history).
   `docs/WORKFLOW.md` and `docs/plans/2026-08-23-workflow-hardening.md` used to be the
   versioned exceptions; both were retired on 2026-09-11 after drifting from the real setup.
