@@ -59,7 +59,9 @@ rsync -az "$REPO_DIR/home/subagents.json" "$VPS_HOST:~/.pi/agent/subagents.json"
 rsync -az "$REPO_DIR/home/AGENTS.md" "$VPS_HOST:~/.pi/agent/AGENTS.md"
 ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, superseded by tintinweb pi-subagents
 # leftovers from packages that are no longer installed anywhere
-ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty ~/.pi/agent/intercom; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
+# NOTE: ~/.pi/agent/intercom was removed from this list when pi-intercom was installed —
+# it is the live config/state dir for npm:pi-intercom, not a leftover.
+ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
 
 # Versioned package configs: the repo is the source of truth, so the VPS gets the same
 # files bootstrap.sh / rebuild.sh deploy locally.

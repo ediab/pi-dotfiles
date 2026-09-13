@@ -22,9 +22,9 @@
     "npm:pi-updater",
     "npm:@juicesharp/rpiv-advisor",
     "npm:cc-safety-net",
+    "npm:pi-intercom",
     "git:github.com/earendil-works/pi-review",
-    "npm:@janvitos/pi-plan-build",
-    "npm:pi-intercom"
+    "npm:@janvitos/pi-plan-build"
   ],
   "skills": [
     "!**/.agents/skills/use-tinyfish"
