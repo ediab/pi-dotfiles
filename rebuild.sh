@@ -46,6 +46,39 @@ else
   cp "$SCRIPT_DIR/home/settings.json" "$HOME/.pi/agent/settings.json" \
     && echo "    settings.json  re-synced" \
     || echo "    FAILED: home/settings.json"
+  # VPS package exclusions (Linux only — Mac keeps the full repo list): strip
+  # excluded ids from the live settings.json so a repo list that includes them
+  # never resurrects them here. All other live settings are left untouched.
+  if [ "$(uname -s)" = "Linux" ] && [ -f "$SCRIPT_DIR/home/vps-package-exclude.txt" ]; then
+    python3 - "$SCRIPT_DIR/home/vps-package-exclude.txt" <<'PY'
+import json, os, sys
+path = os.path.expanduser("~/.pi/agent/settings.json")
+exc = {l.strip() for l in open(sys.argv[1]) if l.strip() and not l.startswith("#")}
+d = json.load(open(path))
+kept, dropped = [], []
+for p in d.get("packages", []):
+    (dropped if isinstance(p, str) and p in exc else kept).append(p)
+d["packages"] = kept
+json.dump(d, open(path, "w"), indent=2)
+open(path, "a").write("\n")
+for p in dropped:
+    print(f"    ! {p} (vps-excluded)")
+PY
+    # Uninstall any excluded package still present on disk (keeps `pi list` clean).
+    while IFS= read -r pkg; do
+      case "$pkg" in ""|\#*) continue ;; esac
+      case "$pkg" in
+        npm:*)      dir="$HOME/.pi/agent/npm/node_modules/${pkg#npm:}" ;;
+        git:*)      dir="$HOME/.pi/agent/git/${pkg#git:}" ;;
+        https://*)  dir="$HOME/.pi/agent/git/${pkg#https://}" ;;
+        *)          dir="" ;;
+      esac
+      if [ -n "$dir" ] && [ -e "$dir" ]; then
+        echo "    - $pkg (vps-excluded, uninstalling)"
+        pi uninstall "$pkg" || echo "    (uninstall failed — may not be removable)"
+      fi
+    done < "$SCRIPT_DIR/home/vps-package-exclude.txt"
+  fi
 fi
 
 echo "==> 3/3  skills (every dir in $SCRIPT_DIR/home/skills/) + extensions (${#CUSTOM_EXTENSIONS[@]} total)"
