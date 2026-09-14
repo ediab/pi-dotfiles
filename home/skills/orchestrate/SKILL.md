@@ -1,0 +1,36 @@
+---
+name: orchestrate
+description: Main-agent-owned fan-out for approved execution or research across 2-5 workstreams. Use when the main agent will decompose, delegate to worker/explorer/researcher/reviewer/oracle, verify, and synthesize inline. Not for planning-only requests (use plan skill) or for handing ownership to a delegated orchestrator.
+---
+
+# Orchestrate
+
+Invoke as `/skill:orchestrate`. The main agent owns decomposition, delegation, verification, and synthesis. Keep this path flat: main → leaf specialists. Never spawn an orchestrator from this skill; an explicit delegated handoff uses the separate `agent-orchestrator` profile instead.
+
+## 1. Decide whether to delegate
+
+Delegate only when at least two independently useful tasks exist, each briefable with clear outputs, and delegation saves time or context. Otherwise work inline. Handle trivial or indivisible tasks directly; route planning-only requests to `/skill:plan`. Never convert a plan request into implementation. Unapproved product or architecture decisions return to the user before any writer dispatches.
+
+## 2. Decompose and brief
+
+Split into 2-5 workstreams; default to two specialists. At most 4 active leaf agents across the whole task; queue the rest. This is your policy limit, not a guarantee from the package's concurrency settings. Reviewers and follow-ups count toward the cap. Give each child one brief: approved objective, read-first paths and context, exact writable-file ownership (or read-only), dependencies, expected result shape, acceptance checks, prohibited actions, no further delegation. Read enough to brief concretely; never delegate "investigate and implement whatever you find."
+
+## 3. Choose profiles by contract
+
+Worker implements approved edits; explorer locates code (quick/medium/very-thorough breadth); researcher gathers external evidence via web tools; reviewer audits a diff without fixing; oracle checks decision consistency. Research-only work is synthesized and source-checked by the owner, not auto-routed to the code reviewer.
+
+## 4. Launch and collect
+
+Launch independent `Agent` calls in one message for real concurrency; respect dependencies. Prefer foreground calls when results gate the next step. Set background/foreground intentionally; main-session detached calls follow the main tool's notification rules. Use `SubagentWorkflow` only after explicit user opt-in to orchestration (including invoking `/skill:orchestrate`); automatic skill discovery alone is not consent. Prefer plain `Agent` calls for a handful of named tasks; for a justified workflow prefer `pipeline()`, pass an explicit existing `agentType` (workflows default to general-purpose), and keep at most 4 active children across all stages via bounded batches of at most four item pipelines, with at most one child active per item. Do not run additional fan-out alongside a workflow if it would exceed that task-wide cap. Workflows must not dispatch orchestrators or specialists that spawn their own children. One writer per file at a time; shared files need serialization and explicit ownership transfer. Disjoint ownership on the current checkout by default; worktrees auto-commit and miss uncommitted changes, so avoid them without Git authorization.
+
+## 5. Verify, review, recover
+
+Inspect actual changes and validation evidence, not summaries. One targeted retry or follow-up per workstream max; after code review allow one bounded correction pass plus one re-review. If checks still fail or a decision remains unresolved after those attempts, report incomplete rather than looping. Resolve conflicting outputs against actual files/sources and the approved scope; escalate unapproved decisions to the user. Review non-trivial implementations inline by default; delegate review only on explicit review-agent consent ("use a reviewer subagent"). Ordinary review requests, generic subagent permission, and invoking this skill or any workflow are not review-delegation consent. An authorized reviewer gets intent, exact changed paths, and a scoped diff/base.
+
+## 6. Respect precedence and boundaries
+
+Profile frontmatter overrides caller options: worker/oracle pin `inherit_context: true`; reviewer and explorer pin models. Default to profile settings; use inexpensive-lookup, normal-implementation, and high-reasoning tiers as selection guidance, never as overrides. Fresh reviewer calls use `inherit_context: false`. Do not prescribe model IDs in this policy, manage Herdr, schedule work, or add persistent orchestration state. Existing harness transcripts/session storage remain unchanged. "Integration" means combining verified results, not authorization for Git operations; follow applicable user and repository Git rules separately.
+
+## 7. Report
+
+Return: what ran (profiles, tasks, status), what changed (verified paths), validation and results, unresolved risks, next step. Mark partial work explicitly; never claim success while children run or checks fail.
