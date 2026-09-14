@@ -1,6 +1,6 @@
 ---
 name: oracle
-description: High-context decision-consistency oracle that protects inherited state and prevents drift. Use it for a second opinion on a plan, design, or architecture decision before acting — not to implement (use worker) and not to locate code (use Explore).
+description: High-context decision-consistency oracle that protects inherited state and prevents drift. Use it for a second opinion on a plan, design, or architecture decision before acting — not to implement (use worker) and not to locate code (use explorer).
 tools: [read, grep, find, ls, bash]
 extensions: false
 thinking: high

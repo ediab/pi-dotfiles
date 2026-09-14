@@ -1,6 +1,6 @@
 ---
 name: evidence-auditor
-description: Independent evidence reviewer for checking whether important research claims are supported by their sources. Use it to audit a research brief or a set of findings before relying on them — not to gather new evidence (use researcher) and not to review code (use reviewer).
+description: Independent evidence reviewer for checking whether important research claims are supported by their sources. Use only when the user explicitly requests a delegated evidence audit; ordinary audits stay in the current session. Not for gathering new evidence or reviewing code.
 tools: [read, "ext:pi-web-access/web_search", "ext:pi-web-access/fetch_content", "ext:pi-web-access/get_search_content", "ext:pi-web-access/source_check"]
 extensions: [pi-web-access]
 thinking: high

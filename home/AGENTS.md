@@ -35,6 +35,11 @@ Project-level `AGENTS.md` / `CLAUDE.md` files layer on top of this one and take 
 * Report validation that could not be run.
 * Add tests only when failure signals real breakage; skip assertions on styling, colors, or internal structure.
 
+## Review delegation
+
+* Review in the current session by default. Spawn a subagent to perform a review or evidence audit only when the user explicitly requests review delegation (for example, "use a reviewer subagent"). This applies regardless of the chosen agent type or tool.
+* "Review this", `/review`, generic permission to use subagents, and invoking an orchestration skill or workflow do not by themselves authorize a review subagent. Keep review stages inline unless review delegation was explicitly requested.
+
 ## Git
 
 * Do not commit, push, rebase, reset, stash, or modify branches unless explicitly requested.

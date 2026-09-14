@@ -20,13 +20,16 @@ Running the bootstrap installs:
   copied to `~/.pi/agent/extensions/`. Herdr's integration file is deliberately not vendored
   here (see *What it does NOT install*).
 - **Custom agents** — every `.md` under `home/agents/`, copied to `~/.pi/agent/agents/`
-  (user agents for `@tintinweb/pi-subagents`, e.g. `Explore` with a custom model).
+  (user agents for `@tintinweb/pi-subagents`, e.g. `explorer` with a custom model).
+  `explorer` and `planner` replace the built-in `Explore` and `Plan`; disabled
+  overrides keep the old types from reappearing. The `plan` skill is separate.
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
   (`backgroundByDefault`, `reportUsage`, `showCost`).
 - **Zentui TUI config** — `home/zentui.json` deployed to `~/.pi/agent/zentui.json`. The custom
   editor is off; footer, theme, and the other components stay as configured.
-- **Plan skill** — `home/skills/plan/` (`/plan` or auto on complex work: read-only,
-  right-sized plan, show on screen then offer to save to `docs/plans/`).
+- **Plan skill** — `home/skills/plan/` (`/skill:plan` or automatic for substantial
+  architectural choices: read-only investigation, right-sized plan, offer to save
+  to `docs/plans/` unless saving was already requested).
 - **Ponytail default** — `home/ponytail.json` deployed to `~/.config/ponytail/config.json`
   (`defaultMode: off`, so ponytail is on-demand via `/ponytail full`). This is the same file
   pi's `/ponytail default` command writes.
@@ -111,7 +114,9 @@ prompt, so a repo carries its own review rules without touching this harness.
 
 `home/agents/reviewer.md` is the complementary path, not a duplicate: `/review` runs the
 review in the current session, while `reviewer` is a fresh-context, report-only subagent on
-its own pinned review model that the main agent delegates to mid-task.
+its own pinned review model, used only when you explicitly request review delegation.
+“Review this”, `/review`, and generic orchestration requests keep the review inline.
+The same explicit-delegation rule applies to evidence audits.
 
 ### Keeping the repo in sync
 

@@ -1,14 +1,16 @@
 ---
 name: plan
-description: Plan complex, ambiguous, or multi-file coding work before implementation. Use when explicitly asked to plan or when implementation has significant architectural choices.
+description: Plan before implementation when explicitly asked to plan or when substantial architectural choices need resolution. A task spanning multiple files alone does not require this skill.
 ---
 
 # Plan
 
 Explore the relevant code before proposing changes.
 
-Do not implement or edit code while planning. Read-only: read, grep, find, and
-ls are fine; no edit, write, or shell commands that modify files.
+Keep investigation read-only; do not implement or edit code while planning.
+Read-only tools and shell commands are fine. The only permitted writes are to
+the plan document (and its directory) when the user has requested or approved
+saving or updating it.
 
 Resolve discoverable questions yourself by reading code. Ask the user only when
 a material product or architectural decision cannot be inferred.
@@ -33,8 +35,13 @@ Describe WHAT must change and the important constraints. Do not pre-write
 implementation code, exact signatures, or detailed shell command sequences
 unless they are necessary to communicate the design.
 
-When complete: show the plan on screen, then ask whether to save it to the
-project's `docs/plans/YYYY-MM-DD-description.md` (create `docs/plans/` if
-missing; prefix the saved file with a short header: date, original request,
-working directory and branch). Then ask whether to implement now. Then stop —
-implementation happens separately.
+When complete, show the plan and offer to save it to the project's
+`docs/plans/YYYY-MM-DD-description.md`. If saving or updating a plan was already
+requested, do it without asking again. Create `docs/plans/` only when saving;
+prefix the saved plan with date, original request, working directory, and the
+verified branch (or state that it is not a Git repository).
+
+Planning or saving a plan is not approval to implement it. Offer implementation
+as the next step and stop pending approval. If the user already explicitly
+requested planning followed by implementation, proceed after planning unless
+an unresolved decision needs their input.
