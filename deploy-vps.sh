@@ -67,6 +67,8 @@ ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty; rm -f ~/.pi/agent/lsp.json ~/.pi/
 # files bootstrap.sh / rebuild.sh deploy locally.
 rsync -az "$REPO_DIR/home/zentui.json" "$VPS_HOST:~/.pi/agent/zentui.json"
 rsync -az "$REPO_DIR/home/pi-plan-build.json" "$VPS_HOST:~/.pi/agent/pi-plan-build.json"
+ssh "$VPS_HOST" 'mkdir -p ~/.pi/agent/pi-blackhole'
+rsync -az "$REPO_DIR/home/pi-blackhole.json" "$VPS_HOST:~/.pi/agent/pi-blackhole/pi-blackhole-config.json"
 
 # code-previews.json is per-machine (local paths and state) — mirrored, not versioned.
 if [ -f "$PI_DIR/code-previews.json" ]; then
