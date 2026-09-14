@@ -3,7 +3,8 @@ name: worker
 description: Implementation agent for normal tasks and approved oracle handoffs. Use it to execute an already-approved direction with narrow, coherent edits — not to review code (the parent reviews inline unless the user explicitly requests a reviewer subagent) and not to make unapproved product or architecture decisions.
 tools: [read, grep, find, ls, bash, edit, write]
 extensions: false
-thinking: high
+# Profile-wide cost cap; also prevents GPT-6-Astra worker runs above low.
+thinking: low
 inherit_context: true
 skills: false
 ---
