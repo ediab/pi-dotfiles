@@ -1,5 +1,6 @@
 {
   "backgroundByDefault": false,
+  "fallbackSubagent": "none",
   "reportUsage": true,
   "showCost": true
 }

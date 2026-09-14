@@ -39,7 +39,7 @@ Project-level `AGENTS.md` / `CLAUDE.md` files layer on top of this one and take 
 
 * Review in the current session by default. Spawn a subagent to perform a review or evidence audit only when the user explicitly requests review delegation (for example, "use a reviewer subagent"). This applies regardless of the chosen agent type or tool.
 * "Review this", `/review`, generic permission to use subagents, and invoking an orchestration skill or workflow do not by themselves authorize a review subagent. Keep review stages inline unless review delegation was explicitly requested.
-* GPT-6-Astra implementation runs go through the `worker-astra` profile (thinking pinned low). Never spawn `worker` with a GPT-6-Astra model override.
+* GPT-6-Astra implementation runs go through the `worker-astra` profile (thinking pinned low). Never spawn `worker` with a GPT-6-Astra model override. The pin is enforced on `Agent` spawns only — workflow `agent()` dispatch lets script `model`/`effort` values override profile pins, so never pass `model` or `effort` on a worker-astra workflow dispatch.
 
 ## Git
 
