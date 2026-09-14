@@ -121,15 +121,9 @@ cp "$SCRIPT_DIR/home/models.json" "$HOME/.pi/agent/models.json" \
 cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
   && echo "    subagents.json  installed"
 
-# Zentui TUI config (custom editor off = pi-plan-build owns the composer).
-# Repo copy is the source of truth.
+# Zentui TUI config (custom editor off). Repo copy is the source of truth.
 cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
   && echo "    zentui.json  installed"
-
-# pi-plan-build config (alt+m toggles the mode; plan title hidden).
-# Repo copy is the source of truth; the package rewrites this file on shortcut changes.
-cp "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" \
-  && echo "    pi-plan-build.json  installed"
 
 # pi-blackhole observational-memory + compaction config (observer on opencode-go/deepseek-v4-flash).
 # Repo copy is the source of truth.

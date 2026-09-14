@@ -131,19 +131,10 @@ cp "$SCRIPT_DIR/home/subagents.json" "$HOME/.pi/agent/subagents.json" \
 cp "$SCRIPT_DIR/home/web-search.json" "$HOME/.pi/agent/web-search.json" \
   && echo "    web-search.json  re-synced"
 
-# Zentui TUI config (custom editor off = pi-plan-build owns the composer;
-# footer/theme and all other components stay as configured).
-# Repo copy is the source of truth.
+# Zentui TUI config (custom editor off; footer/theme and all other
+# components stay as configured). Repo copy is the source of truth.
 cp "$SCRIPT_DIR/home/zentui.json" "$HOME/.pi/agent/zentui.json" \
   && echo "    zentui.json  re-synced"
-
-# pi-plan-build config (alt+m toggles the mode; plan title hidden).
-# Repo copy is the source of truth — the package rewrites this file when its shortcuts
-# change. diff first so rebuild --sync-only stays quiet when nothing changed.
-if ! diff -q "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" &>/dev/null; then
-  cp "$SCRIPT_DIR/home/pi-plan-build.json" "$HOME/.pi/agent/pi-plan-build.json" \
-    && echo "    pi-plan-build.json  re-synced (alt+m toggle, showPlanTitle off)"
-fi
 
 # pi-blackhole observational-memory + compaction config (observer on opencode-go/deepseek-v4-flash).
 # Repo copy is the source of truth — the package does not rewrite this file.

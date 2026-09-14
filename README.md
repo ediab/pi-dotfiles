@@ -24,10 +24,9 @@ Running the bootstrap installs:
 - **Subagent config** — `home/subagents.json` deployed to `~/.pi/agent/subagents.json`
   (`backgroundByDefault`, `reportUsage`, `showCost`).
 - **Zentui TUI config** — `home/zentui.json` deployed to `~/.pi/agent/zentui.json`. The custom
-  editor is off so `pi-plan-build` owns the composer; footer, theme, and the other components
-  stay as configured.
-- **Plan-build config** — `home/pi-plan-build.json` deployed to `~/.pi/agent/pi-plan-build.json`
-  (`alt+m` toggles the mode; the plan title is hidden).
+  editor is off; footer, theme, and the other components stay as configured.
+- **Plan skill** — `home/skills/plan/` (`/plan` or auto on complex work: read-only,
+  right-sized plan, show on screen then offer to save to `docs/plans/`).
 - **Ponytail default** — `home/ponytail.json` deployed to `~/.config/ponytail/config.json`
   (`defaultMode: off`, so ponytail is on-demand via `/ponytail full`). This is the same file
   pi's `/ponytail default` command writes.
@@ -119,7 +118,7 @@ its own pinned review model that the main agent delegates to mid-task.
 | What | Direction | How |
 |---|---|---|
 | `settings.json` (provider, model, theme, packages) | live → repo, **automatic** | launchd agent (installed by `bootstrap.sh` step 4) watches the live file; `sync-settings.sh` commits any `pi`-made change within seconds |
-| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json`, `home/cc-safety-net-policy.json`, `home/zentui.json`, `home/pi-plan-build.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
+| `home/skills/`, `home/extensions/`, `home/agents/`, `home/subagents.json`, `home/models.json`, `home/prompts/`, `home/web-search.json`, `home/ponytail.json`, `home/cc-safety-net-policy.json`, `home/zentui.json` | repo → live | edit in the repo, then `./rebuild.sh`; live edits are overwritten (copy back after tuning subagents) |
 | `home/AGENTS.md` | repo → live (seed only) | the live copy keeps your local-only sections (e.g. VPS access) — the one file that intentionally drifts |
 | `auth.json`, `mcp.json`, `models-store.json`, `code-previews.json`, sessions, caches | never in repo | secrets, runtime state, and per-machine package configs, by design (`deploy-vps.sh` still mirrors `code-previews.json` onto the VPS) |
 
@@ -168,7 +167,6 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   `home/prompts/` -> `~/.pi/agent/prompts/`,
   `home/web-search.json` -> `~/.pi/agent/web-search.json`,
   `home/zentui.json` -> `~/.pi/agent/zentui.json`,
-  `home/pi-plan-build.json` -> `~/.pi/agent/pi-plan-build.json`,
   `home/ponytail.json` -> `~/.config/ponytail/config.json` (ponytail's own config dir, not pi's),
   `home/cc-safety-net-policy.json` -> `~/.cc-safety-net/policy.json` (CC Safety Net's own
   config dir, not pi's),
