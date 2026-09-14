@@ -42,7 +42,7 @@ Running the bootstrap installs:
   (pi-web-access routing: TinyFish primary, Exa fallback). The TinyFish key is a macOS
   Keychain lookup (`!security find-generic-password …`), so `bootstrap.sh` leaves the file
   alone; `deploy-vps.sh` writes a Linux variant that reads `~/.pi/agent/tinyfish-api-key`
-  (0600, refilled from the local Keychain on every deploy).
+  (0600, managed directly on the VPS — deploy never overwrites it).
 - **Agent config** — `home/settings.json` deployed as the canonical pi agent settings, and
   `home/AGENTS.md` seeded to `~/.pi/agent/AGENTS.md` (only when absent, so local-only
   sections like VPS access survive).
@@ -186,6 +186,8 @@ This repo is Elias's. If you clone it, review these before you run `bootstrap.sh
   package configs (`zentui.json`, `code-previews.json`), a Linux variant of `web-search.json`
   plus its key file, then reconciles installed packages against the canonical list.
   `mcp.json` stays per-machine (its `youtube-music` server runs a local macOS node build).
+  Normally invoked automatically by the configs repo's `com.diab.sync-vps` launch agent
+  (change-gated, every 15 minutes); run it by hand when you want the VPS updated now.
 - `docs/solutions/`, `CONCEPTS.md` — archival notes and planning records, kept
   **local-only** and gitignored (not canonical config; find them in git history).
   `docs/WORKFLOW.md` used to be the versioned exception; it was retired on 2026-09-11
@@ -199,3 +201,7 @@ looking like the live tree, but pi manages `~/.pi/agent/` itself — it rewrites
 `settings.json` on every install and package code is written into `extensions/` and
 `skills/` — so a symlink would drag third-party package code into this repo. Copy on
 bootstrap/rebuild, and `sync-settings.sh` copies the settings back when pi changes it.
+
+The VPS side is push-based: `deploy-vps.sh` mirrors `~/.pi/agent/` onto `ssh vps` from
+this machine (nothing on the VPS reads this repo), and it runs on a timer from the configs
+repo's `com.diab.sync-vps` agent rather than by hand.

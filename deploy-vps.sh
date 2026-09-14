@@ -74,11 +74,9 @@ if [ -f "$PI_DIR/code-previews.json" ]; then
 fi
 
 # web-search.json: same routing/preferences as local, but the TinyFish key comes from a 0600
-# file on the VPS instead of the macOS Keychain (Linux has no `security`). The key is pulled
-# from the local Keychain when present and never lands in the repo.
-if command -v security >/dev/null 2>&1 && security find-generic-password -s tinyfish-api-key -w >/dev/null 2>&1; then
-  security find-generic-password -s tinyfish-api-key -w | ssh "$VPS_HOST" 'umask 077; cat > ~/.pi/agent/tinyfish-api-key'
-fi
+# file on the VPS instead of the macOS Keychain (Linux has no `security`). The key file
+# itself is managed directly on the VPS and never lands in the repo — deploy
+# deliberately does not touch it, so a VPS-side key is never clobbered.
 python3 - "$REPO_DIR/home/web-search.json" <<'PY' | ssh "$VPS_HOST" 'cat > ~/.pi/agent/web-search.json'
 import json, sys
 cfg = json.load(open(sys.argv[1]))
