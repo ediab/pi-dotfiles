@@ -22,6 +22,10 @@ Project-level `AGENTS.md` / `CLAUDE.md` files layer on top of this one and take 
 * Avoid speculative backwards compatibility, fallback paths, or defensive abstractions that are not required.
 * Do not remove apparently intentional functionality without confirming that it is part of the requested change.
 * Keep changes localized and easy to review.
+* Name literals whose meaning is not obvious at the call site.
+* For bug fixes, check all callers of the changed function, fix the shared root cause, and verify sibling paths.
+* Prefer deletion and reuse, but do not trade correctness or readability for a smaller diff.
+* Comment only on non-obvious intent or constraints.
 
 ## Validation
 
@@ -29,6 +33,7 @@ Project-level `AGENTS.md` / `CLAUDE.md` files layer on top of this one and take 
 * Prefer targeted checks during iteration; run broader project checks when appropriate before finishing.
 * Fix errors introduced by your changes. Do not hide failures by weakening tests, types, or validation.
 * Report validation that could not be run.
+* Add tests only when failure signals real breakage; skip assertions on styling, colors, or internal structure.
 
 ## Git
 
