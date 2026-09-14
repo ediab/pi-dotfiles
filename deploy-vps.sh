@@ -61,7 +61,7 @@ ssh "$VPS_HOST" 'rm -f ~/.pi/agent/subagents-lite.json'  # legacy lite config, s
 # leftovers from packages that are no longer installed anywhere
 # NOTE: ~/.pi/agent/intercom was removed from this list when pi-intercom was installed —
 # it is the live config/state dir for npm:pi-intercom, not a leftover.
-ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json'
+ssh "$VPS_HOST" 'rm -rf ~/.pi/agent/pi-pretty; rm -f ~/.pi/agent/lsp.json ~/.pi/agent/claude-bridge.json ~/.pi/agent/pi-plan-build.json'  # pi-plan-build removed 2026-09-14, replaced by plan skill
 
 # Versioned package configs: the repo is the source of truth, so the VPS gets the same
 # files bootstrap.sh / rebuild.sh deploy locally.
