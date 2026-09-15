@@ -54,7 +54,7 @@
           },
           "pathDisplay": {
             "mode": "basename",
-            "depth": 1
+            "depth": 3
           },
           "segments": {
             "cwd": true,
