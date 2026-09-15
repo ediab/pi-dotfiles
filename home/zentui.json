@@ -1,8 +1,8 @@
 {
   "components": {
     "editor": {
-      "enabled": false,
-      "style": "accent-rail",
+      "enabled": true,
+      "style": "minimalist",
       "colorSource": "theme",
       "borderColorMode": "adaptive",
       "modelLabel": "id",
@@ -26,9 +26,9 @@
           "contextFormat": "percent",
           "contextGauge": false,
           "showSessionName": true,
-          "showTimer": true,
-          "showCost": true,
-          "showGit": true,
+          "showTimer": false,
+          "showCost": false,
+          "showGit": false,
           "contextThresholds": {
             "warning": 70,
             "error": 90
