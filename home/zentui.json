@@ -70,7 +70,7 @@
             "tokens": false,
             "cost": true,
             "sessionDuration": false,
-            "username": false,
+            "username": true,
             "time": false,
             "os": false,
             "packageVersion": false
