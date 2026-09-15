@@ -1,9 +1,9 @@
 ---
-name: oracle
-description: High-context decision-consistency oracle that protects inherited state and prevents drift. Use it for a second opinion on a plan, design, or architecture decision before acting — not to implement (use worker) and not to locate code (use explorer).
+name: oracle-backup
+description: Failure-recovery-only mirror of oracle (same contract). Use only when the primary model/provider is unavailable or failing. High-context decision-consistency oracle that protects inherited state and prevents drift. Use it for a second opinion on a plan, design, or architecture decision before acting — not to implement (use worker) and not to locate code (use explorer).
 tools: [read, grep, find, ls, bash]
 extensions: false
-model: opencode-go/muse-spark-1.3-contributor
+model: opencode-go/deepseek-v4.1-flash
 thinking: high
 inherit_context: true
 skills: false

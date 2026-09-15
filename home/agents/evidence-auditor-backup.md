@@ -1,9 +1,9 @@
 ---
-name: evidence-auditor
-description: Independent evidence reviewer for checking whether important research claims are supported by their sources. Use only when the user explicitly requests a delegated evidence audit; ordinary audits stay in the current session. Not for gathering new evidence or reviewing code.
+name: evidence-auditor-backup
+description: Failure-recovery-only mirror of evidence-auditor (same contract). Use only when the primary model/provider is unavailable or failing. Independent evidence reviewer for checking whether important research claims are supported by their sources. Use only when the user explicitly requests a delegated evidence audit; ordinary audits stay in the current session. Not for gathering new evidence or reviewing code.
 tools: [read, "ext:pi-web-access/web_search", "ext:pi-web-access/fetch_content", "ext:pi-web-access/get_search_content", "ext:pi-web-access/source_check"]
 extensions: [pi-web-access]
-model: opencode-go/muse-spark-1.3-contributor
+model: opencode-go/deepseek-v4.1-flash
 thinking: high
 skills: false
 ---

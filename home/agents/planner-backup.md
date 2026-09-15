@@ -1,8 +1,8 @@
 ---
-name: planner
-description: Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs.
+name: planner-backup
+description: Failure-recovery-only mirror of planner (same contract). Use only when the primary model/provider is unavailable or failing. Software architect agent for designing implementation plans. Use this when you need to plan the implementation strategy for a task. Returns step-by-step plans, identifies critical files, and considers architectural trade-offs.
 tools: [read, bash, grep, find, ls]
-model: openai-codex/gpt-6-astra
+model: opencode-go/glm-5.3
 extensions: [pi-fff]
 skills: [plan]
 prompt_mode: replace

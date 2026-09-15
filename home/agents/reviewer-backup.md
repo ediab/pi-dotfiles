@@ -1,9 +1,9 @@
 ---
-name: reviewer
-description: Fresh-context code review of a diff or changeset — correctness, security, architecture, performance. Report-only, never fixes. Use only when the user explicitly requests a review subagent; ordinary review requests stay in the current session.
+name: reviewer-backup
+description: Failure-recovery-only mirror of reviewer (same contract). Use only when the primary model/provider is unavailable or failing. Fresh-context code review of a diff or changeset — correctness, security, architecture, performance. Report-only, never fixes. Use only when the user explicitly requests a review subagent; ordinary review requests stay in the current session.
 color: cyan
 tools: [read, bash, grep, find, ls]
-model: opencode-go/muse-spark-1.3-contributor
+model: opencode-go/deepseek-v4.1-flash
 thinking: max
 skills: false
 extensions: false

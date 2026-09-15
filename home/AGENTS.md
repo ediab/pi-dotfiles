@@ -39,7 +39,15 @@ Project-level `AGENTS.md` / `CLAUDE.md` files layer on top of this one and take 
 
 * Review in the current session by default. Spawn a subagent to perform a review or evidence audit only when the user explicitly requests review delegation (for example, "use a reviewer subagent"). This applies regardless of the chosen agent type or tool.
 * "Review this", `/review`, generic permission to use subagents, and invoking an orchestration skill or workflow do not by themselves authorize a review subagent. Keep review stages inline unless review delegation was explicitly requested.
-* GPT-6-Astra implementation runs go through the `worker-astra` profile (thinking pinned low). Never spawn `worker` with a GPT-6-Astra model override. The pin is enforced on `Agent` spawns only — workflow `agent()` dispatch lets script `model`/`effort` values override profile pins, so never pass `model` or `effort` on a worker-astra workflow dispatch.
+## Model routing and backup profiles
+
+Model IDs live in the agent profiles (`~/.pi/agent/agents/*.md`); this section states routing policy only. The `<role>-backup` profile is the source of truth for role fallback mapping.
+
+* Astra orchestrates and plans; it never implements. When the main session uses Astra, delegate implementation to `worker`. Never run implementation on Astra through `general-purpose`, a model override, or workflow `model`/`effort` values.
+* Delegate to the primary profile first. Use the matching `<role>-backup` profile only when the primary's model/provider is unavailable or failing — never as an automatic quality-driven retry on a second model.
+* When beginning delegation, check exact pinned provider/model availability for primary and backup; skip an unavailable primary, and report a blocker if neither is available. Do not rely on implicit provider/parent fallback.
+* After the prior run has stopped/settled and partial output and the working tree are inspected, retry with a NEW call using the matching backup type — not a resume of the failed primary (resume reuses its session/model regardless of `subagent_type`) and not a model override. Brief the backup with remaining scope only. Do not replay completed writes or relaunch successful siblings. At most one backup attempt within the existing retry budget; the backup changes neither review consent nor approved scope. If the backup fails, stop and report.
+* Limits: distinguish an unavailable/unresolvable pinned model from an omitted model — the package may use the same model under another provider, then inherit the parent if the pin cannot resolve. No-Astra/backup routing is policy, not enforcement; `Agent` profile pins do have enforcement. Workflow `agent()` dispatch lets script `model`/`effort` values override profile pins — so never pass `model` or `effort` alongside a model-pinned role, and always pass an explicit existing `agentType` (workflows default to `general-purpose`).
 
 ## Git
 

@@ -1,8 +1,8 @@
 ---
-name: agent-orchestrator
-description: Delegated owner of an approved bounded fan-out task (2-5 workstreams). Use only via explicit Agent handoff with subagent_type agent-orchestrator when the main agent transfers ownership of approved execution or research. Not for planning-only work or inline orchestration the main agent keeps.
+name: agent-orchestrator-backup
+description: Failure-recovery-only mirror of agent-orchestrator (same contract). Use only when the primary model/provider is unavailable or failing. Delegated owner of an approved bounded fan-out task (2-5 workstreams). Use only via explicit Agent handoff with subagent_type agent-orchestrator-backup when the main agent transfers ownership of approved execution or research. Not for planning-only work or inline orchestration the main agent keeps.
 tools: [read, grep, find, ls, bash]
-model: openai-codex/gpt-6-astra
+model: opencode-go/glm-5.3
 thinking: high
 inherit_context: true
 skills: false

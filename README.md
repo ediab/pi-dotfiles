@@ -118,6 +118,21 @@ its own pinned review model, used only when you explicitly request review delega
 “Review this”, `/review`, and generic orchestration requests keep the review inline.
 The same explicit-delegation rule applies to evidence audits.
 
+### Subagent models
+
+Primaries run cheap; Astra only orchestrates and plans, never implements.
+Each role has an explicit `<role>-backup` profile for model/provider failure
+— same contract, no automatic failover. Dispatch backups via
+`subagent_type: <role>-backup` (or workflow `agentType` with a leaf profile only — orchestrators are forbidden in workflows — and never with a `model`/`effort` override; profile pins win on `Agent` calls). Start a new call; resuming the primary retains its model. Inspect partial work before
+retrying; at most one backup attempt per retry budget. The Muse→DeepSeek backups share one provider, so they are not full OpenCode-outage resilience, and nothing here is a hard no-Astra guard (see `home/AGENTS.md`).
+
+| Roles | Primary | Backup |
+|---|---|---|
+| `agent-orchestrator`, `planner` | `openai-codex/gpt-6-astra` | `opencode-go/glm-5.3` |
+| `worker`, `explorer`, `researcher`, `reviewer`, `evidence-auditor`, `oracle`, `general-purpose` | `opencode-go/muse-spark-1.3-contributor` | `opencode-go/deepseek-v4.1-flash` |
+
+Also: `planner` is restricted to the `pi-fff` extension with the `plan` skill preloaded; the built-in `general-purpose` profile is overridden and model-pinned; `worker-astra` is retired (use `worker`).
+
 ### Keeping the repo in sync
 
 | What | Direction | How |
